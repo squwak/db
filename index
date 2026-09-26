@@ -1,0 +1,3317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doll Ball Nations</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
+header{background:#101d31;padding:14px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0 0 10px;font-size:25px}
+nav{display:flex;gap:6px;overflow-x:auto}
+nav button{white-space:nowrap;background:#1c2c45;color:#fff;border:0;border-radius:8px;padding:9px 12px;font-weight:bold}
+nav button.active{background:#3977d4}
+main{max-width:1050px;margin:auto;padding:15px}
+h2{margin-top:5px}
+.card{background:#101d31;border-radius:14px;padding:15px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+button{background:#3977d4;color:#fff;border:0;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer}
+button.secondary{background:#263a57}
+button.green{background:#238b57}
+button.red{background:#9b3939}
+button:disabled{opacity:.45}
+.list{display:flex;flex-direction:column;gap:6px}
+.row{background:#18283f;border-radius:9px;padding:10px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.small{font-size:13px;color:#aebbd0}
+.rank{width:38px;display:inline-block;font-weight:bold}
+.badge{padding:3px 7px;border-radius:6px;background:#263a57;font-size:12px}
+.match{background:#16263d;border-radius:12px;padding:12px;margin:8px 0}
+.score{font-size:20px;font-weight:bold;text-align:center;margin:7px}
+.live{color:#65e38a;font-weight:bold}
+.event{padding:4px 0;border-bottom:1px solid #23364e}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px;text-align:left;border-bottom:1px solid #263a50}
+input,select{width:100%;padding:11px;border-radius:8px;border:0;background:#172940;color:#fff;margin-bottom:10px}
+.warn{background:#5b3e19;padding:10px;border-radius:9px;margin:10px 0}
+.success{background:#194f38;padding:10px;border-radius:9px;margin:10px 0}
+.group{background:#13243a;border-radius:12px;padding:12px;margin:10px 0}
+.group h3{margin:0 0 10px}
+.teamline{display:flex;justify-content:space-between;padding:7px;border-bottom:1px solid #253951}
+.qualified{color:#65e38a;font-weight:bold}
+.eliminated{color:#e46c6c}
+.bracket{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;overflow-x:auto}
+.bracketCol{min-width:210px}
+.bracketTitle{text-align:center;font-weight:bold;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Doll Ball Nations</h1>
+<nav id="nav"></nav>
+</header>
+
+<main id="app"></main>
+
+<script>
+
+/* =========================================================
+   REGIONS
+========================================================= */
+
+const regions={
+"North America":[
+"canada","usa","mexico","bermuda","jamica","cuba","haiti","dominica",
+"dominican repablic","the bahamas","guyana","surinam","french guyana",
+"belize","guatamala","el salvador","honduras","nicaragua","costa rica",
+"panama","aruba","cureçao","porta rico","anguila","st kitts and navis",
+"antigua and burbuda","st lucia","st vincent and the granadies","granada",
+"barbedos","trinidad and tobago"
+],
+
+"South America":[
+"venasuela","equador","colombia","peru","brazil","bolivia","chile",
+"paraguy","argentina","uruguy"
+],
+
+"Oceania":[
+"australia","new zealand","papua new guine","hong kong","macou","fiji",
+"tuvalu","new caladonia","venawtu","solomon islands","nuaru",
+"marshell island","micronisia","guam","palau","singapoor","butnai",
+"maldives","maritius","french polonisia(tahiti)","kiribti","tonga",
+"somoa","cook islands"
+],
+
+"Africa":[
+"south africa","leostho","eswatini","namibia","botswana","zimbabwe",
+"zambia","madagascar","mozambic","malawi","comoros","angola","seychelles",
+"dr congo","congo","gabon","equatorial guine","sao tome and princepe",
+"camaroon","central african repablic","south sudan","tanzenia","rawnada",
+"burundi","kenya","uganda","somolia","djubuti","ethiopia","eritria",
+"sudan","egypt","libya","tunisia","niger","chad","algiria","mali",
+"moroco","nigiria","benin","togo","ghana","burkina fuso",
+"ivary cost (cote d'ivire)","libiria","siera leon","guina","guina besso",
+"senegal","the gamibia","cabo verde (cape varde)","maurirania"
+],
+
+"Asia":[
+"jorden","lebanon","syria","iraq","sudi arabia","oman","yeman","uae",
+"qatar","baharain","kuwait","iran","turkministan","uzbecistan",
+"tajikistan","kyrgistan","afgenistan","pakistan","china","mongolia",
+"india","nepal","bhutan","sri lanka","banglindash","myanmar (burma)",
+"laos","cambodia","thailand","vietnam","malasya","indonisia","taiwan",
+"timor lest (east timor)","philapins","south korea","north korea","japan"
+],
+
+"Europe":[
+"russia","kazechstan","israel","turkye","cypres","gorgia","azerbijan",
+"arminia","greece","bulgaria","north macadonia","albania","montanegro",
+"kosavo","serbia","bosnia and herchegovina","croatia","slovinia",
+"romania","moldova","ukraine","belarus","latvia","poland","lithunaia",
+"estonia","finland","sweden","norway","iceland","greenland","faroe islands",
+"slovakia","hungry","austria","czechia","malta","italy","vatican city",
+"san marino","denemark","germany","netherlands","belgium","luxumberg",
+"liechtenstain","switzerland","france","monaco","andora","spain",
+"portugal","gibrolter","england","wales","scotland","northern ireland",
+"ireland"
+]
+};
+
+/* =========================================================
+   ALIASES
+========================================================= */
+
+const aliases={
+"engaland":"england",
+"england":"england",
+"vatican":"vatican city",
+"vatican city":"vatican city",
+"northen islands":"northern ireland",
+"northen ireland":"northern ireland",
+"northern ireland":"northern ireland",
+"burnai":"butnai",
+"brunei":"butnai",
+"butnai":"butnai",
+"new zealnd":"new zealand",
+"new zealand":"new zealand",
+"venazuela":"venasuela",
+"venzuela":"venasuela",
+"venasuela":"venasuela",
+"crotia":"croatia",
+"croatia":"croatia",
+"kosovo":"kosavo",
+"kosavo":"kosavo",
+"morocco":"moroco",
+"moroco":"moroco",
+"tanzania":"tanzenia",
+"tanzenia":"tanzenia",
+"tuvelu":"tuvalu",
+"tuvalu":"tuvalu",
+"albinia":"albania",
+"albania":"albania",
+"ivary coast":"ivary cost (cote d'ivire)",
+"cote d'ivoire":"ivary cost (cote d'ivire)",
+"ivary cost (cote d'ivire)":"ivary cost (cote d'ivire)",
+"austaralia":"australia",
+"australia":"australia",
+"ecudor":"equador",
+"equador":"equador",
+"khazachstan":"kazechstan",
+"kazakhstan":"kazechstan",
+"kazechstan":"kazechstan",
+"russsia":"russia",
+"russia":"russia",
+"denmark":"denemark",
+"denemark":"denemark",
+"belguim":"belgium",
+"belgium":"belgium",
+"philippines":"philapins",
+"philapins":"philapins",
+"rwanda":"rawnada",
+"rawnada":"rawnada",
+"jamaica":"jamica",
+"jamica":"jamica"
+};
+
+function key(name){
+  let x=String(name).trim().toLowerCase();
+  let old="";
+  while(x!==old){
+    old=x;
+    x=aliases[x]||x;
+  }
+  return x;
+}
+
+function same(a,b){
+  return key(a)===key(b);
+}
+
+/* =========================================================
+   UNIQUE COUNTRIES
+========================================================= */
+
+const allCountries=[];
+const seen=new Set();
+
+Object.values(regions).flat().forEach(c=>{
+  const k=key(c);
+  if(!seen.has(k)){
+    seen.add(k);
+    allCountries.push(c);
+  }
+});
+
+/* =========================================================
+   RANKING
+========================================================= */
+
+const rankingTop=[
+"canada","iceland","japan","panama","finland","australia","usa","mexico",
+"france","england","poland","ireland","colombia","equador","germany",
+"latvia","siera leon","netherlands","sweden","scotland","kenya",
+"new zealand","st lucia","chile","jamica","switzerland","belgium",
+"denemark","estonia","kazechstan","turkye","dr congo","togo","china",
+"india","russia","south africa","spain","venazuela","bulgaria","ukraine",
+"portugal","romania","philapins","norway","italy","rawnada","argentina",
+"croatia","kosavo","israel","moroco","brazil","costa rica","fiji",
+"north korea","moldova","austria","czechia","greece","nigiria","tanzania",
+"haiti","nicaragua","south korea","tuvelu","peru","barbedos","senegal",
+"serbia","guam","hong kong","cureçao","uruguy","libiria","hungry",
+"bosnia and herchegovina","ivary coast","albinia","ghana","san marino",
+"nepal","vatican","malta","laos","thailand","vietnam","sudi arabia",
+"the bahamas","andora","wales"
+];
+
+const ranking=[];
+
+function addRankCountry(c){
+  if(!ranking.some(x=>same(x,c)))ranking.push(c);
+}
+
+rankingTop.forEach(addRankCountry);
+allCountries.forEach(addRankCountry);
+
+function rankOf(country){
+  const i=ranking.findIndex(x=>same(x,country));
+  return i<0?999:i+1;
+}
+
+/* =========================================================
+   DOLLS
+========================================================= */
+
+const dolls=[
+["pong","canada","gk",1],
+["muffin","canada","st",9],
+["haterin","canada","cb",5],
+["sabrina","canada","cm",8],
+["pingwiny jr","canada","lw",8],
+["sling","canada","lb",4],
+["pingy","canada","cam",9],
+["bullet","canada","cam",4],
+["rem","canada","rw",9],
+
+["saffin","usa","rw",10],
+["choper","usa","st",6],
+["eep","usa","lwb",9],
+["cow","usa","lw",5],
+["ice","usa","cam",7],
+
+["unili","mexico","lw",8],
+["snac","mexico","st",8],
+["baby pickels","mexico","rw",7],
+
+["kwakel","jamica","lw",7],
+["pen pen","panama","rw",10],
+["rocky","panama","lw",9],
+["fark","st lucia","st",8],
+
+["julyswitch","argentina","gk",1],
+["mursh","colombia","cam",6],
+["zevel","equador","rb",5],
+["happyno","venasuela","gk",5],
+["masco","chile","cm",5],
+
+["corky","siera leon","lb",8],
+["slhip","rawnada","cb",1],
+["cif","togo","cdm",3],
+["soos","south africa","cdm",4],
+["chimp","dr congo","lw",6],
+["banany","kenya","st",6],
+["ely","kenya","gk",2],
+
+["kiwi","new zealand","st",8],
+["drac","australia","st",7],
+["moow","australia","st",6],
+["dodo","australia","lw",9],
+
+["danny","philapins","cb",4],
+["weby","india","gk",4],
+["pandy","china","cam",5],
+["ramen","japan","cam",10],
+["yummy","japan","rw",5],
+
+["blip plop","kazechstan","cdm",7],
+["fip","russia","rb",1],
+["mewstronaut","russia","cam",3],
+["rolly","ukraine","cdm",2],
+
+["ax","finland","cam",10],
+["shelly","finland","gk",9],
+["hute","sweden","cam",8],
+["tax","norway","gk",1],
+["pellow","norway","st",3],
+
+["blossem","iceland","st",9],
+["fung","iceland","cdm",6],
+["buzzy","iceland","cam",10],
+
+["billy bob","latvia","gk",8],
+["spoty","latvia","lw",4],
+["turkmoon","turkye","rw",6],
+["buttyr","bulgaria","st",7],
+["vat","romania","cm",5],
+["jama","poland","cam",10],
+
+["blindapus","germany","st",5],
+["capyburger","germany","cam",6],
+["stag","estonia","gk",6],
+["tryc","denemark","st",5],
+
+["olivia","switzerland","lw",6],
+["polo","italy","lw",3],
+["foxy","scotland","cam",8],
+["ire","ireland","st",4],
+["terly","ireland","lw",7],
+
+["lemony","netherlands","st",10],
+["waffle","belgium","cam",7],
+["tery","portugal","cm",5],
+["spertle","spain","cb",6],
+
+["hipy","france","gk",8],
+["rooni","france","st",6],
+["cute cake","france","cm",7],
+["brawly","england","cb",6],
+["paw","england","cam",3]
+];
+
+function dollsOf(country){
+  return dolls.filter(d=>same(d[1],country));
+}
+
+function hasDolls(country){
+  return dollsOf(country).length>0;
+}
+
+function hasGK(country){
+  return dollsOf(country).some(d=>d[2]==="gk");
+}
+
+function strength(country){
+  const ds=dollsOf(country);
+  if(!ds.length)return 0;
+  return ds.reduce((a,d)=>a+d[3],0)/ds.length;
+}
+
+/* =========================================================
+   SCORING
+========================================================= */
+
+/*
+  IMPORTANT:
+  - A team with dolls can score normally.
+  - A team with ZERO dolls cannot score against a team
+    that has dolls.
+  - A team with ZERO dolls CAN score against another
+    team with ZERO dolls.
+  - A goalkeeper can score in penalties.
+  - Penalties can decide a draw.
+*/
+
+function canScore(country,opponent,penalty=false){
+  const own=hasDolls(country);
+  const opp=hasDolls(opponent);
+
+  if(penalty){
+    return true;
+  }
+
+  if(own)return true;
+
+  if(!opp)return true;
+
+  return false;
+}
+
+function scoreChance(country,opponent){
+  if(!canScore(country,opponent,false))return 0;
+
+  const own=hasDolls(country);
+  const opp=hasDolls(opponent);
+
+  if(!own&&!opp){
+    return .025;
+  }
+
+  if(!own&&opp){
+    return 0;
+  }
+
+  const s=strength(country);
+
+  let chance=.035+s*.021;
+
+  if(!opp)chance+=.025;
+
+  return Math.min(.20,chance);
+}
+
+/* =========================================================
+   CUP DATA
+========================================================= */
+
+const cupInfo={
+ncc:{
+name:"National Champions Cup",
+qualificationName:"NCC Qualification"
+},
+euro:{
+name:"Euro",
+qualificationName:"Euro Qualification"
+},
+asia:{
+name:"Asian Cup",
+qualificationName:"Asian Cup Qualification"
+},
+africa:{
+name:"African Cup",
+qualificationName:"African Cup Qualification"
+},
+oceania:{
+name:"Oceania Cup",
+qualificationName:"Oceania Qualification"
+},
+america:{
+name:"American Cup",
+qualificationName:"American Qualification"
+}
+};
+
+const qualifications={};
+
+/* =========================================================
+   NAV
+========================================================= */
+
+const navItems=[
+["home","HOME"],
+["cups","NATION CUPS"],
+["friendly","FRIENDLY"],
+["nations","NATIONS"],
+["rankings","RANKINGS"],
+["dolls","DOLLS"],
+["history","HISTORY"]
+];
+
+const nav=document.getElementById("nav");
+const app=document.getElementById("app");
+
+let historyMatches=[];
+
+navItems.forEach(([id,label])=>{
+  const b=document.createElement("button");
+  b.id="nav-"+id;
+  b.textContent=label;
+  b.onclick=()=>page(id);
+  nav.appendChild(b);
+});
+
+function setActive(id){
+  navItems.forEach(x=>{
+    document.getElementById("nav-"+x[0])
+      .classList.toggle("active",x[0]===id);
+  });
+}
+
+function page(id){
+  setActive(id);
+
+  if(id==="home")homePage();
+  if(id==="cups")cupsPage();
+  if(id==="friendly")friendlyPage();
+  if(id==="nations")nationsPage();
+  if(id==="rankings")rankingsPage();
+  if(id==="dolls")dollsPage();
+  if(id==="history")historyPage();
+}
+
+/* =========================================================
+   HOME
+========================================================= */
+
+function homePage(){
+  app.innerHTML=`
+    <div class="card">
+      <h2>Doll Ball Nations</h2>
+      <p>International Doll Ball football simulation.</p>
+
+      <div class="grid">
+        <button onclick="page('cups')">Nation Cups</button>
+        <button onclick="page('friendly')">Friendly Match</button>
+        <button onclick="page('rankings')">World Rankings</button>
+        <button onclick="page('nations')">Nations</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Top 10</h3>
+      <div class="list">
+        ${ranking.slice(0,10).map((c,i)=>`
+          <div class="row">
+            <span><span class="rank">${i+1}</span>${c}</span>
+            <span class="badge">${dollsOf(c).length} dolls</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   CUPS
+========================================================= */
+
+function cupsPage(){
+  app.innerHTML=`
+    <h2>Nation Cups</h2>
+
+    <div class="grid">
+
+      <div class="card">
+        <h3>International</h3>
+        <button onclick="cupMenu('ncc')">National Champions Cup</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'NCC 2',ranking.slice(-16)
+        )">NCC 2</button>
+      </div>
+
+      <div class="card">
+        <h3>Europe</h3>
+        <button onclick="cupMenu('euro')">Euro</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'Baltic Cup',
+          ['latvia','estonia','lithunaia']
+        )">Baltic Cup</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'Balkan Cup',
+          ['bulgaria','greece','turkye','albania','north macadonia',
+          'kosavo','montanegro','serbia','bosnia and herchegovina',
+          'croatia','slovinia','romania']
+        )">Balkan Cup</button>
+      </div>
+
+      <div class="card">
+        <h3>Asia</h3>
+        <button onclick="cupMenu('asia')">Asian Cup</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'Cupestan',
+          ['kazechstan','tajikistan','turkministan','uzbecistan',
+          'kyrgistan','afgenistan','pakistan']
+        )">Cupestan</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'Middle East Cup',
+          ['lebanon','syria','jorden','iraq','sudi arabia','kuwait',
+          'baharain','qatar','uae','oman','yeman']
+        )">Middle East Cup</button>
+      </div>
+
+      <div class="card">
+        <h3>Africa</h3>
+        <button onclick="cupMenu('africa')">African Cup</button>
+      </div>
+
+      <div class="card">
+        <h3>Americas</h3>
+        <button onclick="cupMenu('america')">American Cup</button>
+        <br><br>
+        <button class="secondary" onclick="openFixedCup(
+          'Central Cup',
+          ['panama','costa rica','nicaragua','honduras',
+          'guatamala','el salvador','belize']
+        )">Central Cup</button>
+      </div>
+
+      <div class="card">
+        <h3>Oceania</h3>
+        <button onclick="cupMenu('oceania')">Oceania Cup</button>
+      </div>
+
+    </div>
+  `;
+}
+
+/* =========================================================
+   CUP MENU
+========================================================= */
+
+function cupMenu(id){
+  const c=cupInfo[id];
+  const qualified=qualifications[id];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupsPage()">← Back</button>
+
+    <div class="card">
+      <h2>${c.name}</h2>
+
+      <div class="grid">
+        <button onclick="qualificationPage('${id}')">
+          ${c.qualificationName}
+        </button>
+
+        <button onclick="chooseTeamsPage('${id}')">
+          Choose Teams Manually
+        </button>
+
+        <button class="secondary" onclick="mainCupPage('${id}')">
+          Play Main Cup
+        </button>
+      </div>
+
+      ${
+        qualified?
+        `<div class="success">
+          ${qualified.length} teams selected for the main cup.
+        </div>`:
+        `<div class="warn">
+          Play qualification or choose the teams manually before the main cup.
+        </div>`
+      }
+    </div>
+  `;
+}
+
+/* =========================================================
+   QUALIFICATION TEAM POOLS
+========================================================= */
+
+function qualificationTeams(id){
+
+  if(id==="ncc"){
+    return [
+      ...regions["Europe"].slice(),
+      ...regions["Asia"].slice(),
+      ...regions["Africa"].slice(),
+      ...regions["North America"].slice(),
+      ...regions["South America"].slice(),
+      ...regions["Oceania"].slice()
+    ];
+  }
+
+  if(id==="america"){
+    return [
+      ...regions["North America"],
+      ...regions["South America"]
+    ];
+  }
+
+  if(id==="euro")return regions["Europe"].slice();
+  if(id==="asia")return regions["Asia"].slice();
+  if(id==="africa")return regions["Africa"].slice();
+  if(id==="oceania")return regions["Oceania"].slice();
+
+  return [];
+}
+
+/* =========================================================
+   QUALIFICATION TARGETS
+========================================================= */
+
+function qualificationTarget(id){
+
+  if(id==="ncc")return 64;
+
+  if(id==="euro")return 24;
+
+  if(id==="asia")return 24;
+
+  if(id==="africa")return 16;
+
+  if(id==="oceania")return 12;
+
+  if(id==="america")return 16;
+
+  return 16;
+}
+
+/* =========================================================
+   NCC SPECIAL QUALIFICATION
+========================================================= */
+
+function nccQualificationPage(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('ncc')">← Back</button>
+
+    <div class="card">
+      <h2>NCC Qualification</h2>
+
+      <p>
+        NCC qualification has separate continental qualification slots.
+      </p>
+
+      <div class="grid">
+        ${slots.map(s=>`
+          <div class="qualbox">
+            <b>${s[0]}</b>
+            <div class="small">${s[1]} NCC places</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <button onclick="startNCCQualification()">
+        Start NCC Qualification
+      </button>
+
+      <button class="secondary" onclick="autoNCCQualification()">
+        Auto Qualification
+      </button>
+
+      <button class="secondary" onclick="chooseNCCTeams()">
+        Choose NCC Teams Manually
+      </button>
+    </div>
+
+    <div id="nccQualArea"></div>
+  `;
+}
+
+function startNCCQualification(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  window.nccQualData={
+    results:{},
+    tables:{},
+    finished:0
+  };
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('ncc')">← Exit</button>
+
+    <div class="card">
+      <h2>NCC Qualification</h2>
+      <p>
+        Europe: 16 · Asia: 14 · Africa: 10 · North America: 10 ·
+        South America: 8 · Oceania: 6
+      </p>
+
+      <div id="nccQualGroups"></div>
+    </div>
+  `;
+
+  const area=document.getElementById("nccQualGroups");
+
+  slots.forEach(([region,places])=>{
+    const teams=regions[region].slice();
+
+    const shuffled=teams.slice().sort(()=>Math.random()-.5);
+
+    const pairs=[];
+
+    for(let i=0;i<shuffled.length;i+=2){
+      if(shuffled[i+1])pairs.push([shuffled[i],shuffled[i+1]]);
+    }
+
+    const card=document.createElement("div");
+    card.className="qualbox";
+
+    card.innerHTML=`
+      <h3>${region}</h3>
+      <p>${teams.length} nations competing for ${places} NCC places.</p>
+      <div id="ncc-${region.replaceAll(" ","-")}"></div>
+    `;
+
+    area.appendChild(card);
+
+    const box=card.querySelector(
+      "#ncc-"+region.replaceAll(" ","-")
+    );
+
+    pairs.forEach((p,i)=>{
+      const m=document.createElement("div");
+      m.className="match";
+      m.id=`nccmatch-${region}-${i}`;
+
+      m.innerHTML=`
+        <b>${p[0]} vs ${p[1]}</b>
+        <div class="score">— : —</div>
+        <button>Play</button>
+      `;
+
+      m.querySelector("button").onclick=()=>{
+        playNCCQualMatch(
+          region,
+          places,
+          p[0],
+          p[1],
+          m
+        );
+      };
+
+      box.appendChild(m);
+    });
+
+    window.nccQualData.results[region]=[];
+    window.nccQualData.tables[region]={
+      teams,
+      places
+    };
+  });
+}
+
+function playNCCQualMatch(region,places,a,b,box){
+
+  if(box.dataset.done)return;
+  box.dataset.done="1";
+
+  const score=box.querySelector(".score");
+  const button=box.querySelector("button");
+
+  button.disabled=true;
+  score.className="score live";
+  score.textContent="MATCH LIVE";
+
+  const events=document.createElement("div");
+  box.appendChild(events);
+
+  let minute=0;
+  let ga=0;
+  let gb=0;
+
+  const timer=setInterval(()=>{
+    minute+=10;
+
+    const r=Math.random();
+
+    if(r<scoreChance(a,b)*.75){
+      ga=Math.min(16,ga+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${a} scores!</div>
+      `;
+    }else if(
+      r<
+      scoreChance(a,b)*.75+
+      scoreChance(b,a)*.75
+    ){
+      gb=Math.min(16,gb+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${b} scores!</div>
+      `;
+    }else{
+      events.innerHTML+=`
+        <div class="event">${minute}' No goal.</div>
+      `;
+    }
+
+    if(minute>=90){
+
+      clearInterval(timer);
+
+      if(ga===gb){
+        if(canScore(a,b,true)&&canScore(b,a,true)){
+          Math.random()<.5?ga++:gb++;
+        }
+      }
+
+      score.className="score";
+      score.textContent=`${ga} : ${gb}`;
+
+      const winner=ga>gb?a:b;
+
+      events.innerHTML+=`
+        <div class="event"><b>${winner} wins.</b></div>
+      `;
+
+      window.nccQualData.results[region].push({
+        a,b,ga,gb,winner
+      });
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:"NCC Qualification"
+      });
+
+      checkNCCRegionFinished(region,places);
+    }
+
+  },450);
+}
+
+function checkNCCRegionFinished(region,places){
+
+  const results=window.nccQualData.results[region];
+
+  const teams=window.nccQualData.tables[region].teams;
+
+  /*
+    Every team plays enough qualification matches to produce
+    a ranking. For the browser version, once all displayed
+    qualification matches are completed, the winners plus
+    highest ranked remaining teams fill the continental slots.
+  */
+
+  const expected=Math.floor(teams.length/2);
+
+  if(results.length<expected)return;
+
+  const score={};
+
+  teams.forEach(t=>{
+    score[key(t)]={name:t,pts:0,gf:0,ga:0};
+  });
+
+  results.forEach(m=>{
+    score[key(m.a)].gf+=m.ga;
+    score[key(m.a)].ga+=m.gb;
+    score[key(m.b)].gf+=m.gb;
+    score[key(m.b)].ga+=m.ga;
+
+    if(m.ga>m.gb){
+      score[key(m.a)].pts+=3;
+    }else if(m.gb>m.ga){
+      score[key(m.b)].pts+=3;
+    }else{
+      score[key(m.a)].pts++;
+      score[key(m.b)].pts++;
+    }
+  });
+
+  const table=Object.values(score).sort((a,b)=>
+    b.pts-a.pts ||
+    (b.gf-b.ga)-(a.gf-a.ga) ||
+    b.gf-a.gf ||
+    rankOf(a.name)-rankOf(b.name)
+  );
+
+  const qualified=table.slice(0,places).map(x=>x.name);
+
+  window.nccQualData.tables[region].qualified=qualified;
+  window.nccQualData.finished++;
+
+  showNCCQualificationProgress();
+}
+
+function showNCCQualificationProgress(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  const done=slots.filter(s=>
+    window.nccQualData.tables[s[0]].qualified
+  ).length;
+
+  const area=document.createElement("div");
+  area.className="success";
+  area.id="ncc-progress";
+
+  area.innerHTML=`
+    NCC qualification regions completed: ${done}/6
+  `;
+
+  const old=document.getElementById("ncc-progress");
+  if(old)old.remove();
+
+  document.querySelector(".card").appendChild(area);
+
+  if(done===6){
+    const qualified=[];
+
+    slots.forEach(([region])=>{
+      qualified.push(
+        ...window.nccQualData.tables[region].qualified
+      );
+    });
+
+    qualifications.ncc=qualified;
+
+    setTimeout(showNCCFinalQualified,300);
+  }
+}
+
+function showNCCFinalQualified(){
+
+  const q=qualifications.ncc||[];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('ncc')">← Back</button>
+
+    <div class="card">
+      <h2>NCC Qualified Teams</h2>
+
+      <div class="success">
+        ${q.length} teams qualified.
+      </div>
+
+      <div class="grid">
+        <div class="qualbox">
+          <b>Europe</b>
+          <div>${q.slice(0,16).length} teams</div>
+        </div>
+
+        <div class="qualbox">
+          <b>Asia</b>
+          <div>14 teams</div>
+        </div>
+
+        <div class="qualbox">
+          <b>Africa</b>
+          <div>10 teams</div>
+        </div>
+
+        <div class="qualbox">
+          <b>North America</b>
+          <div>10 teams</div>
+        </div>
+
+        <div class="qualbox">
+          <b>South America</b>
+          <div>8 teams</div>
+        </div>
+
+        <div class="qualbox">
+          <b>Oceania</b>
+          <div>6 teams</div>
+        </div>
+      </div>
+
+      <div class="list">
+        ${q.map((t,i)=>`
+          <div class="row">
+            <span>
+              <span class="rank">${i+1}</span>${t}
+            </span>
+            <span class="badge">NCC</span>
+          </div>
+        `).join("")}
+      </div>
+
+      <br>
+
+      <button onclick="startNCCGroupStage()">
+        Start NCC Group Stage
+      </button>
+    </div>
+  `;
+}
+
+function autoNCCQualification(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  const q=[];
+
+  slots.forEach(([region,count])=>{
+    const teams=regions[region]
+      .slice()
+      .sort((a,b)=>rankOf(a)-rankOf(b))
+      .slice(0,count);
+
+    q.push(...teams);
+  });
+
+  qualifications.ncc=q;
+
+  showNCCFinalQualified();
+}
+
+function chooseNCCTeams(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  window.nccManual={};
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('ncc')">← Back</button>
+
+    <div class="card">
+      <h2>Choose NCC Teams</h2>
+      <p>
+        You must choose the exact number of teams from each continent.
+      </p>
+
+      ${slots.map(([region,count])=>`
+        <div class="qualbox">
+          <h3>${region} — 0 / ${count}</h3>
+          <div id="manual-${region.replaceAll(" ","-")}"></div>
+        </div>
+      `).join("")}
+
+      <button onclick="saveNCCManual()">
+        Use Selected Teams
+      </button>
+    </div>
+  `;
+
+  slots.forEach(([region,count])=>{
+
+    window.nccManual[region]=[];
+
+    const box=document.getElementById(
+      "manual-"+region.replaceAll(" ","-")
+    );
+
+    regions[region].forEach((team,i)=>{
+
+      const row=document.createElement("div");
+      row.className="row";
+
+      const button=document.createElement("button");
+      button.textContent="Select";
+      button.className="secondary";
+
+      button.onclick=()=>{
+        const arr=window.nccManual[region];
+
+        const pos=arr.findIndex(x=>same(x,team));
+
+        if(pos>=0){
+          arr.splice(pos,1);
+          button.textContent="Select";
+          button.className="secondary";
+        }else{
+          if(arr.length>=count)return;
+
+          arr.push(team);
+          button.textContent="Selected";
+          button.className="green";
+        }
+
+        row.parentElement.previousElementSibling.textContent=
+          `${region} — ${arr.length} / ${count}`;
+      };
+
+      row.innerHTML=`<span>${team}</span>`;
+      row.appendChild(button);
+      box.appendChild(row);
+    });
+  });
+}
+
+function saveNCCManual(){
+
+  const slots=[
+    ["Europe",16],
+    ["Asia",14],
+    ["Africa",10],
+    ["North America",10],
+    ["South America",8],
+    ["Oceania",6]
+  ];
+
+  const q=[];
+
+  for(const [region,count] of slots){
+
+    if(window.nccManual[region].length!==count){
+      alert(
+        `${region}: choose exactly ${count} teams.`
+      );
+      return;
+    }
+
+    q.push(...window.nccManual[region]);
+  }
+
+  qualifications.ncc=q;
+
+  showNCCFinalQualified();
+}
+
+/* =========================================================
+   OTHER QUALIFICATIONS
+========================================================= */
+
+function qualificationPage(id){
+
+  if(id==="ncc"){
+    nccQualificationPage();
+    return;
+  }
+
+  const teams=qualificationTeams(id);
+  const target=qualificationTarget(id);
+  const c=cupInfo[id];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('${id}')">← Back</button>
+
+    <div class="card">
+      <h2>${c.qualificationName}</h2>
+
+      <p>${teams.length} nations entered.</p>
+      <p>Top ${target} qualify for ${c.name}.</p>
+
+      <button onclick="autoQualification('${id}')">
+        Auto Qualification
+      </button>
+
+      <button class="secondary" onclick="chooseTeamsPage('${id}')">
+        Choose Teams Manually
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Play Qualification</h3>
+      <p class="small">
+        Matches are played individually.
+      </p>
+      <button onclick="startOtherQualification('${id}')">
+        Start Matches
+      </button>
+    </div>
+
+    <div id="qualArea"></div>
+  `;
+}
+
+function startOtherQualification(id){
+
+  const teams=qualificationTeams(id);
+  const target=qualificationTarget(id);
+
+  const shuffled=teams.slice().sort(()=>Math.random()-.5);
+
+  const pairs=[];
+
+  for(let i=0;i<shuffled.length;i+=2){
+    if(shuffled[i+1])pairs.push([shuffled[i],shuffled[i+1]]);
+  }
+
+  window.otherQual={
+    id,
+    target,
+    teams,
+    results:[],
+    expected:pairs.length
+  };
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('${id}')">← Exit</button>
+
+    <div class="card">
+      <h2>${cupInfo[id].qualificationName}</h2>
+      <div id="otherQualMatches"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("otherQualMatches");
+
+  pairs.forEach((p,i)=>{
+
+    const div=document.createElement("div");
+    div.className="match";
+    div.innerHTML=`
+      <b>${p[0]} vs ${p[1]}</b>
+      <div class="score">— : —</div>
+      <button>Play Match</button>
+    `;
+
+    div.querySelector("button").onclick=()=>{
+      playOtherQualMatch(
+        p[0],p[1],div
+      );
+    };
+
+    box.appendChild(div);
+  });
+}
+
+function playOtherQualMatch(a,b,box){
+
+  if(box.dataset.done)return;
+  box.dataset.done="1";
+
+  const score=box.querySelector(".score");
+  const button=box.querySelector("button");
+
+  button.disabled=true;
+  score.className="score live";
+  score.textContent="MATCH LIVE";
+
+  const events=document.createElement("div");
+  box.appendChild(events);
+
+  let minute=0;
+  let ga=0,gb=0;
+
+  const timer=setInterval(()=>{
+
+    minute+=10;
+
+    const r=Math.random();
+
+    if(r<scoreChance(a,b)*.75){
+      ga=Math.min(16,ga+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${a} scores!</div>
+      `;
+    }else if(
+      r<
+      scoreChance(a,b)*.75+
+      scoreChance(b,a)*.75
+    ){
+      gb=Math.min(16,gb+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${b} scores!</div>
+      `;
+    }else{
+      events.innerHTML+=`
+        <div class="event">${minute}' No goal.</div>
+      `;
+    }
+
+    if(minute>=90){
+
+      clearInterval(timer);
+
+      if(ga===gb){
+        Math.random()<.5?ga++:gb++;
+      }
+
+      score.className="score";
+      score.textContent=`${ga} : ${gb}`;
+
+      window.otherQual.results.push({
+        a,b,ga,gb
+      });
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:cupInfo[window.otherQual.id].qualificationName
+      });
+
+      if(
+        window.otherQual.results.length===
+        window.otherQual.expected
+      ){
+        finishOtherQualification();
+      }
+    }
+
+  },450);
+}
+
+function finishOtherQualification(){
+
+  const q=window.otherQual;
+  const scores={};
+
+  q.teams.forEach(t=>{
+    scores[key(t)]={
+      name:t,
+      pts:0,
+      gf:0,
+      ga:0
+    };
+  });
+
+  q.results.forEach(m=>{
+
+    scores[key(m.a)].gf+=m.ga;
+    scores[key(m.a)].ga+=m.gb;
+
+    scores[key(m.b)].gf+=m.gb;
+    scores[key(m.b)].ga+=m.ga;
+
+    if(m.ga>m.gb){
+      scores[key(m.a)].pts+=3;
+    }else{
+      scores[key(m.b)].pts+=3;
+    }
+  });
+
+  const table=Object.values(scores).sort((a,b)=>
+    b.pts-a.pts||
+    (b.gf-b.ga)-(a.gf-a.ga)||
+    b.gf-a.gf||
+    rankOf(a.name)-rankOf(b.name)
+  );
+
+  qualifications[q.id]=table
+    .slice(0,q.target)
+    .map(x=>x.name);
+
+  showQualificationResult(q.id);
+}
+
+function autoQualification(id){
+
+  const teams=qualificationTeams(id);
+  const target=qualificationTarget(id);
+
+  qualifications[id]=teams
+    .slice()
+    .sort((a,b)=>rankOf(a)-rankOf(b))
+    .slice(0,target);
+
+  showQualificationResult(id);
+}
+
+function showQualificationResult(id){
+
+  const c=cupInfo[id];
+  const teams=qualifications[id]||[];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('${id}')">← Back</button>
+
+    <div class="card">
+      <h2>${c.name} Qualified Teams</h2>
+
+      <div class="success">
+        ${teams.length} teams qualified.
+      </div>
+
+      <div class="list">
+        ${teams.map((t,i)=>`
+          <div class="row">
+            <span>
+              <span class="rank">${i+1}</span>${t}
+            </span>
+            <span class="badge">QUALIFIED</span>
+          </div>
+        `).join("")}
+      </div>
+
+      <br>
+
+      <button onclick="mainCupPage('${id}')">
+        Play ${c.name}
+      </button>
+    </div>
+  `;
+}
+
+/* =========================================================
+   MANUAL TEAMS FOR OTHER CUPS
+========================================================= */
+
+function chooseTeamsPage(id){
+
+  if(id==="ncc"){
+    chooseNCCTeams();
+    return;
+  }
+
+  const teams=qualificationTeams(id);
+  const target=qualificationTarget(id);
+  const c=cupInfo[id];
+
+  window.manualSelected=[];
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupMenu('${id}')">← Back</button>
+
+    <div class="card">
+      <h2>Choose ${c.name} Teams</h2>
+      <p>Select exactly ${target} teams.</p>
+      <p id="selectedCount">0 / ${target}</p>
+
+      <div id="chooseList"></div>
+
+      <br>
+      <button onclick="saveManualTeams('${id}',${target})">
+        Use Selected Teams
+      </button>
+    </div>
+  `;
+
+  const box=document.getElementById("chooseList");
+
+  teams.forEach((team,i)=>{
+
+    const row=document.createElement("div");
+    row.className="row";
+
+    row.innerHTML=`
+      <span>
+        <span class="rank">${rankOf(team)}</span>${team}
+      </span>
+    `;
+
+    const b=document.createElement("button");
+    b.textContent="Select";
+    b.className="secondary";
+
+    b.onclick=()=>{
+
+      const pos=window.manualSelected.findIndex(
+        x=>same(x,team)
+      );
+
+      if(pos>=0){
+        window.manualSelected.splice(pos,1);
+        b.textContent="Select";
+        b.className="secondary";
+      }else{
+        if(window.manualSelected.length>=target)return;
+
+        window.manualSelected.push(team);
+        b.textContent="Selected";
+        b.className="green";
+      }
+
+      document.getElementById("selectedCount")
+        .textContent=
+        `${window.manualSelected.length} / ${target}`;
+    };
+
+    row.appendChild(b);
+    box.appendChild(row);
+  });
+}
+
+function saveManualTeams(id,target){
+
+  if(window.manualSelected.length!==target){
+    alert(`Select exactly ${target} teams.`);
+    return;
+  }
+
+  qualifications[id]=window.manualSelected.slice();
+
+  showQualificationResult(id);
+}
+
+/* =========================================================
+   NCC GROUP STAGE
+   64 TEAMS
+   16 GROUPS OF 4
+   TOP 2 ADVANCE
+========================================================= */
+
+function startNCCGroupStage(){
+
+  const teams=qualifications.ncc||[];
+
+  if(teams.length!==64){
+    alert("NCC needs exactly 64 qualified teams.");
+    return;
+  }
+
+  const shuffled=teams.slice().sort(()=>Math.random()-.5);
+
+  const groups=[];
+
+  for(let i=0;i<16;i++){
+    groups.push(shuffled.slice(i*4,i*4+4));
+  }
+
+  window.nccTournament={
+    groups,
+    standings:[],
+    groupIndex:0
+  };
+
+  showNCCGroups();
+}
+
+function showNCCGroups(){
+
+  const groups=window.nccTournament.groups;
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupsPage()">← Exit NCC</button>
+
+    <div class="card">
+      <h2>NCC Group Stage</h2>
+      <p>16 groups of 4. The top 2 teams from every group advance.</p>
+      <div id="nccGroups"></div>
+    </div>
+  `;
+
+  const area=document.getElementById("nccGroups");
+
+  groups.forEach((g,i)=>{
+
+    const box=document.createElement("div");
+    box.className="group";
+
+    box.innerHTML=`
+      <h3>Group ${String.fromCharCode(65+i)}</h3>
+
+      <div>
+        ${g.map(t=>`
+          <div class="teamline">
+            <span>${t}</span>
+            <span>${dollsOf(t).length} dolls</span>
+          </div>
+        `).join("")}
+      </div>
+
+      <br>
+
+      <button onclick="playNCCGroup(${i})">
+        Play Group
+      </button>
+
+      <div id="group-result-${i}"></div>
+    `;
+
+    area.appendChild(box);
+  });
+}
+
+function playNCCGroup(index){
+
+  const group=window.nccTournament.groups[index];
+  const resultBox=document.getElementById("group-result-"+index);
+
+  if(resultBox.dataset.played)return;
+  resultBox.dataset.played="1";
+
+  resultBox.innerHTML=`
+    <div class="small">Playing group matches...</div>
+    <div id="groupMatches-${index}"></div>
+  `;
+
+  const box=document.getElementById("groupMatches-"+index);
+
+  const pairs=[];
+
+  for(let i=0;i<4;i++){
+    for(let j=i+1;j<4;j++){
+      pairs.push([group[i],group[j]]);
+    }
+  }
+
+  const table={};
+
+  group.forEach(t=>{
+    table[key(t)]={
+      name:t,
+      pts:0,
+      gf:0,
+      ga:0
+    };
+  });
+
+  let finished=0;
+
+  pairs.forEach((p,i)=>{
+
+    const m=document.createElement("div");
+    m.className="match";
+
+    m.innerHTML=`
+      <b>${p[0]} vs ${p[1]}</b>
+      <div class="score">— : —</div>
+      <button>Play Match</button>
+    `;
+
+    box.appendChild(m);
+
+    m.querySelector("button").onclick=()=>{
+
+      if(m.dataset.done)return;
+      m.dataset.done="1";
+
+      const score=m.querySelector(".score");
+      const button=m.querySelector("button");
+
+      button.disabled=true;
+      score.className="score live";
+      score.textContent="MATCH LIVE";
+
+      let minute=0;
+      let ga=0;
+      let gb=0;
+
+      const events=document.createElement("div");
+      m.appendChild(events);
+
+      const timer=setInterval(()=>{
+
+        minute+=10;
+
+        const r=Math.random();
+
+        if(r<scoreChance(p[0],p[1])*.75){
+          ga=Math.min(16,ga+1);
+          events.innerHTML+=`
+            <div class="event">${minute}' ${p[0]} scores!</div>
+          `;
+        }else if(
+          r<
+          scoreChance(p[0],p[1])*.75+
+          scoreChance(p[1],p[0])*.75
+        ){
+          gb=Math.min(16,gb+1);
+          events.innerHTML+=`
+            <div class="event">${minute}' ${p[1]} scores!</div>
+          `;
+        }else{
+          events.innerHTML+=`
+            <div class="event">${minute}' No goal.</div>
+          `;
+        }
+
+        if(minute>=90){
+
+          clearInterval(timer);
+
+          if(ga===gb){
+            score.className="score";
+            score.textContent=`${ga} : ${gb}`;
+          }else{
+            score.className="score";
+            score.textContent=`${ga} : ${gb}`;
+          }
+
+          table[key(p[0])].gf+=ga;
+          table[key(p[0])].ga+=gb;
+
+          table[key(p[1])].gf+=gb;
+          table[key(p[1])].ga+=ga;
+
+          if(ga>gb){
+            table[key(p[0])].pts+=3;
+          }else if(gb>ga){
+            table[key(p[1])].pts+=3;
+          }else{
+            table[key(p[0])].pts++;
+            table[key(p[1])].pts++;
+          }
+
+          historyMatches.unshift({
+            a:p[0],
+            b:p[1],
+            ga,
+            gb,
+            type:`NCC Group ${String.fromCharCode(65+index)}`
+          });
+
+          finished++;
+
+          if(finished===pairs.length){
+            finishNCCGroup(index,table);
+          }
+        }
+
+      },450);
+    };
+  });
+}
+
+function finishNCCGroup(index,table){
+
+  const standings=Object.values(table).sort((a,b)=>
+    b.pts-a.pts||
+    (b.gf-b.ga)-(a.gf-a.ga)||
+    b.gf-a.gf||
+    rankOf(a.name)-rankOf(b.name)
+  );
+
+  const resultBox=document.getElementById("group-result-"+index);
+
+  resultBox.innerHTML+=`
+    <div class="qualbox">
+      <h4>Final Standings</h4>
+
+      ${standings.map((t,i)=>`
+        <div class="teamline">
+          <span>
+            ${i+1}. ${t.name}
+          </span>
+
+          <span>
+            ${t.pts} pts
+            ${
+              i<2
+              ?'<span class="qualified"> QUALIFIED</span>'
+              :'<span class="eliminated"> OUT</span>'
+            }
+          </span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  if(!window.nccTournament.standings[index]){
+    window.nccTournament.standings[index]=standings;
+  }
+
+  const done=window.nccTournament.standings
+    .filter(Boolean).length;
+
+  if(done===16){
+    setTimeout(startNCCKnockouts,700);
+  }
+}
+
+/* =========================================================
+   NCC KNOCKOUTS
+   32 TEAMS
+========================================================= */
+
+function startNCCKnockouts(){
+
+  const qualified=[];
+
+  for(let i=0;i<16;i++){
+    const table=window.nccTournament.standings[i];
+
+    if(table){
+      qualified.push(table[0].name);
+      qualified.push(table[1].name);
+    }
+  }
+
+  window.nccKnockout={
+    teams:qualified
+  };
+
+  showNCCKnockoutRound("Round of 32");
+}
+
+function showNCCKnockoutRound(title){
+
+  const teams=window.nccKnockout.teams;
+
+  if(teams.length===1){
+    finishNCC(teams[0]);
+    return;
+  }
+
+  let nextTitle="";
+
+  if(teams.length===32)nextTitle="Round of 16";
+  if(teams.length===16)nextTitle="Quarterfinals";
+  if(teams.length===8)nextTitle="Semifinals";
+  if(teams.length===4)nextTitle="Final";
+  if(teams.length===2)nextTitle="Champion";
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupsPage()">← Exit NCC</button>
+
+    <div class="card">
+      <h2>NCC — ${title}</h2>
+      <p>${teams.length} teams</p>
+      <div id="koMatches"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("koMatches");
+
+  const shuffled=teams.slice().sort(()=>Math.random()-.5);
+
+  const winners=[];
+
+  let finished=0;
+
+  for(let i=0;i<shuffled.length;i+=2){
+
+    const a=shuffled[i];
+    const b=shuffled[i+1];
+
+    const m=document.createElement("div");
+    m.className="match";
+
+    m.innerHTML=`
+      <b>${a} vs ${b}</b>
+      <div class="score">— : —</div>
+      <button>Play Match</button>
+    `;
+
+    box.appendChild(m);
+
+    m.querySelector("button").onclick=()=>{
+
+      if(m.dataset.done)return;
+      m.dataset.done="1";
+
+      const score=m.querySelector(".score");
+      const button=m.querySelector("button");
+
+      button.disabled=true;
+      score.className="score live";
+      score.textContent="MATCH LIVE";
+
+      let minute=0;
+      let ga=0;
+      let gb=0;
+
+      const events=document.createElement("div");
+      m.appendChild(events);
+
+      const timer=setInterval(()=>{
+
+        minute+=10;
+
+        const r=Math.random();
+
+        if(r<scoreChance(a,b)*.75){
+          ga=Math.min(16,ga+1);
+          events.innerHTML+=`
+            <div class="event">${minute}' ${a} scores!</div>
+          `;
+        }else if(
+          r<
+          scoreChance(a,b)*.75+
+          scoreChance(b,a)*.75
+        ){
+          gb=Math.min(16,gb+1);
+          events.innerHTML+=`
+            <div class="event">${minute}' ${b} scores!</div>
+          `;
+        }else{
+          events.innerHTML+=`
+            <div class="event">${minute}' No goal.</div>
+          `;
+        }
+
+        if(minute>=90){
+
+          clearInterval(timer);
+
+          if(ga===gb){
+
+            events.innerHTML+=`
+              <div class="event"><b>Penalty shootout!</b></div>
+            `;
+
+            if(canScore(a,b,true)&&canScore(b,a,true)){
+              Math.random()<.5?ga++:gb++;
+            }else if(canScore(a,b,true)){
+              ga++;
+            }else{
+              gb++;
+            }
+          }
+
+          score.className="score";
+          score.textContent=`${ga} : ${gb}`;
+
+          const winner=ga>gb?a:b;
+
+          winners.push(winner);
+
+          events.innerHTML+=`
+            <div class="event"><b>${winner} advances.</b></div>
+          `;
+
+          historyMatches.unshift({
+            a,b,ga,gb,
+            type:"NCC "+title
+          });
+
+          finished++;
+
+          if(finished===Math.floor(shuffled.length/2)){
+
+            window.nccKnockout.teams=winners;
+
+            setTimeout(()=>{
+              showNCCKnockoutRound(nextTitle);
+            },700);
+          }
+        }
+
+      },450);
+    };
+  }
+}
+
+function finishNCC(winner){
+
+  app.innerHTML=`
+    <div class="card">
+      <h2>National Champions Cup</h2>
+
+      <div class="success">
+        <div class="small">NCC CHAMPION</div>
+        <h1>${winner}</h1>
+      </div>
+
+      <button onclick="cupsPage()">Back to Cups</button>
+    </div>
+  `;
+}
+
+/* =========================================================
+   FIXED CUPS
+========================================================= */
+
+function openFixedCup(name,teams){
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupsPage()">← Back</button>
+
+    <div class="card">
+      <h2>${name}</h2>
+      <p>${teams.length} teams</p>
+      <div id="fixedMatches"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("fixedMatches");
+
+  for(let i=0;i<teams.length;i+=2){
+
+    if(!teams[i+1])continue;
+
+    const a=teams[i];
+    const b=teams[i+1];
+
+    const div=document.createElement("div");
+    div.className="match";
+
+    div.innerHTML=`
+      <b>${a} vs ${b}</b>
+      <div class="score">— : —</div>
+      <button>Play Match</button>
+    `;
+
+    div.querySelector("button").onclick=()=>{
+      playSimpleMatch(div,a,b);
+    };
+
+    box.appendChild(div);
+  }
+}
+
+function playSimpleMatch(box,a,b){
+
+  const score=box.querySelector(".score");
+  const button=box.querySelector("button");
+
+  button.disabled=true;
+  score.className="score live";
+  score.textContent="MATCH LIVE";
+
+  const events=document.createElement("div");
+  box.appendChild(events);
+
+  let minute=0;
+  let ga=0;
+  let gb=0;
+
+  const timer=setInterval(()=>{
+
+    minute+=10;
+
+    const r=Math.random();
+
+    if(r<scoreChance(a,b)*.7){
+      ga=Math.min(16,ga+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${a} scores!</div>
+      `;
+    }else if(
+      r<
+      scoreChance(a,b)*.7+
+      scoreChance(b,a)*.7
+    ){
+      gb=Math.min(16,gb+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${b} scores!</div>
+      `;
+    }else{
+      events.innerHTML+=`
+        <div class="event">${minute}' No goal.</div>
+      `;
+    }
+
+    if(minute>=90){
+
+      clearInterval(timer);
+
+      if(ga===gb){
+
+        if(canScore(a,b,true)&&canScore(b,a,true)){
+          Math.random()<.5?ga++:gb++;
+        }else if(canScore(a,b,true)){
+          ga++;
+        }else{
+          gb++;
+        }
+      }
+
+      score.className="score";
+      score.textContent=`${ga} : ${gb}`;
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:"Cup"
+      });
+    }
+
+  },450);
+}
+
+/* =========================================================
+   FRIENDLY
+========================================================= */
+
+function friendlyPage(){
+
+  app.innerHTML=`
+    <div class="card">
+      <h2>Friendly Match</h2>
+      <p class="small">Friendly matches never change rankings.</p>
+
+      <input id="fa" placeholder="Country 1">
+      <input id="fb" placeholder="Country 2">
+
+      <button onclick="startFriendly()">Start Match</button>
+    </div>
+
+    <div id="friendlyResult"></div>
+  `;
+}
+
+function startFriendly(){
+
+  const a=document.getElementById("fa").value.trim();
+  const b=document.getElementById("fb").value.trim();
+
+  if(!a||!b)return;
+
+  const result=document.getElementById("friendlyResult");
+
+  let ga=0;
+  let gb=0;
+  let minute=0;
+
+  result.innerHTML=`
+    <div class="card">
+      <h3>${a} vs ${b}</h3>
+      <div id="friendlyScore" class="score">0 : 0</div>
+      <div id="friendlyEvents"></div>
+    </div>
+  `;
+
+  const score=document.getElementById("friendlyScore");
+  const events=document.getElementById("friendlyEvents");
+
+  const timer=setInterval(()=>{
+
+    minute+=5;
+
+    const r=Math.random();
+
+    if(r<scoreChance(a,b)*.55){
+      ga=Math.min(16,ga+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${a} scores!</div>
+      `;
+    }else if(
+      r<
+      scoreChance(a,b)*.55+
+      scoreChance(b,a)*.55
+    ){
+      gb=Math.min(16,gb+1);
+      events.innerHTML+=`
+        <div class="event">${minute}' ${b} scores!</div>
+      `;
+    }else{
+      events.innerHTML+=`
+        <div class="event">${minute}' No goal.</div>
+      `;
+    }
+
+    score.textContent=`${ga} : ${gb}`;
+
+    if(minute>=90){
+
+      clearInterval(timer);
+
+      events.innerHTML+=`<br><b>FULL TIME</b>`;
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:"Friendly"
+      });
+    }
+
+  },500);
+}
+
+/* =========================================================
+   NATIONS
+========================================================= */
+
+function nationsPage(){
+
+  app.innerHTML=`
+    <h2>Nations</h2>
+    <input id="nationSearch"
+      placeholder="Search nations..."
+      oninput="filterNations()">
+
+    <div id="nationList" class="list"></div>
+  `;
+
+  filterNations();
+}
+
+function filterNations(){
+
+  const q=(
+    document.getElementById("nationSearch")?.value||""
+  ).toLowerCase();
+
+  const list=ranking.filter(c=>
+    c.toLowerCase().includes(q)
+  );
+
+  document.getElementById("nationList").innerHTML=
+    list.map(c=>`
+      <div class="row">
+        <span>
+          <span class="rank">${rankOf(c)}</span>${c}
+        </span>
+        <span class="badge">${dollsOf(c).length} dolls</span>
+      </div>
+    `).join("");
+}
+
+/* =========================================================
+   RANKINGS
+========================================================= */
+
+function rankingsPage(){
+
+  app.innerHTML=`
+    <div class="card">
+      <h2>World Rankings</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nation</th>
+            <th>Dolls</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${ranking.map((c,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${c}</td>
+              <td>${dollsOf(c).length}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================
+   DOLLS
+========================================================= */
+
+function dollsPage(){
+
+  app.innerHTML=`
+    <h2>Dolls</h2>
+
+    <input id="dollSearch"
+      placeholder="Search dolls..."
+      oninput="filterDolls()">
+
+    <div id="dollList" class="list"></div>
+  `;
+
+  filterDolls();
+}
+
+function filterDolls(){
+
+  const q=(
+    document.getElementById("dollSearch")?.value||""
+  ).toLowerCase();
+
+  const list=dolls.filter(d=>
+    d[0].toLowerCase().includes(q)||
+    d[1].toLowerCase().includes(q)
+  );
+
+  document.getElementById("dollList").innerHTML=
+    list.map(d=>`
+      <div class="row">
+        <div>
+          <b>${d[0]}</b>
+          <div class="small">
+            ${d[1]} · ${d[2].toUpperCase()}
+          </div>
+        </div>
+
+        <span class="badge">${d[3]}/10</span>
+      </div>
+    `).join("");
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function historyPage(){
+
+  app.innerHTML=`
+    <div class="card">
+      <h2>Match History</h2>
+
+      ${
+        historyMatches.length
+        ?
+        historyMatches.map(m=>`
+          <div class="match">
+            <div class="small">${m.type}</div>
+            <b>${m.a} ${m.ga} : ${m.gb} ${m.b}</b>
+          </div>
+        `).join("")
+        :
+        "<p>No matches played yet.</p>"
+      }
+    </div>
+  `;
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+page("home");
+
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doll Ball Nations</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
+header{background:#101d31;padding:14px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0 0 10px;font-size:25px}
+nav{display:flex;gap:6px;overflow-x:auto}
+nav button{white-space:nowrap;background:#1c2c45;color:#fff;border:0;border-radius:8px;padding:9px 12px;font-weight:bold}
+nav button.active{background:#3977d4}
+main{max-width:1000px;margin:auto;padding:15px}
+h2{margin-top:5px}
+.card{background:#101d31;border-radius:14px;padding:15px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+button{background:#3977d4;color:white;border:0;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer}
+button.secondary{background:#263a57}
+button:disabled{opacity:.45}
+.list{display:flex;flex-direction:column;gap:6px}
+.row{background:#18283f;border-radius:9px;padding:10px;display:flex;justify-content:space-between;gap:10px}
+.small{font-size:13px;color:#aebbd0}
+.rank{width:35px;display:inline-block;font-weight:bold}
+.badge{padding:3px 7px;border-radius:6px;background:#263a57;font-size:12px}
+.match{background:#16263d;border-radius:12px;padding:12px;margin:8px 0}
+.score{font-size:20px;font-weight:bold;text-align:center;margin:7px}
+.live{color:#65e38a;font-weight:bold}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px;text-align:left;border-bottom:1px solid #263a50}
+input{width:100%;padding:11px;border-radius:8px;border:0;background:#172940;color:white;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Doll Ball Nations</h1>
+<nav id="nav"></nav>
+</header>
+
+<main id="app"></main>
+
+<script>
+/* =========================
+   COUNTRY DATA
+========================= */
+
+const regions={
+"North America":[
+"canada","usa","mexico","bermuda","jamica","cuba","haiti","dominica",
+"dominican repablic","the bahamas","guyana","surinam","french guyana",
+"belize","guatamala","el salvador","honduras","nicaragua","costa rica",
+"panama","aruba","cureçao","porta rico","anguila","st kitts and navis",
+"antigua and burbuda","st lucia","st vincent and the granadies","granada",
+"barbedos","trinidad and tobago"
+],
+
+"South America":[
+"venasuela","equador","colombia","peru","brazil","bolivia","chile",
+"paraguy","argentina","uruguy"
+],
+
+"Oceania":[
+"australia","new zealand","papua new guine","hong kong","macou","fiji",
+"tuvalu","new caladonia","venawtu","solomon islands","nuaru",
+"marshell island","micronisia","guam","palau","singapoor","butnai",
+"maldives","maritius","french polonisia(tahiti)","kiribti","tonga",
+"somoa","cook islands"
+],
+
+"Africa":[
+"south africa","leostho","eswatini","namibia","botswana","zimbabwe",
+"zambia","madagascar","mozambic","malawi","comoros","angola","seychelles",
+"dr congo","congo","gabon","equatorial guine","sao tome and princepe",
+"camaroon","central african repablic","south sudan","tanzenia","rawnada",
+"burundi","kenya","uganda","somolia","djubuti","ethiopia","eritria",
+"sudan","egypt","libya","tunisia","niger","chad","algiria","mali",
+"moroco","nigiria","benin","togo","ghana","burkina fuso",
+"ivary cost (cote d'ivire)","libiria","siera leon","guina","guina besso",
+"senegal","the gamibia","cabo verde (cape varde)","maurirania"
+],
+
+"Asia":[
+"jorden","lebanon","syria","iraq","sudi arabia","oman","yeman","uae",
+"qatar","baharain","kuwait","iran","turkministan","uzbecistan",
+"tajikistan","kyrgistan","afgenistan","pakistan","china","mongolia",
+"india","nepal","bhutan","sri lanka","banglindash","myanmar (burma)",
+"laos","cambodia","thailand","vietnam","malasya","indonisia","taiwan",
+"timor lest (east timor)","philapins","south korea","north korea","japan"
+],
+
+"Europe":[
+"russia","kazechstan","israel","turkye","cypres","gorgia","azerbijan",
+"arminia","greece","bulgaria","north macadonia","albania","montanegro",
+"kosavo","serbia","bosnia and herchegovina","croatia","slovinia",
+"romania","moldova","ukraine","belarus","latvia","poland","lithunaia",
+"estonia","finland","sweden","norway","iceland","greenland","faroe islands",
+"slovakia","hungry","austria","czechia","malta","italy","vatican city",
+"san marino","denemark","germany","netherlands","belgium","luxumberg",
+"liechtenstain","switzerland","france","monaco","andora","spain",
+"portugal","gibrolter","england","wales","scotland","northern ireland",
+"ireland"
+]
+};
+
+/* =========================
+   SPELLING ALIASES
+========================= */
+
+const aliases={
+"engaland":"england",
+"england":"england",
+
+"vatican":"vatican city",
+"vatican city":"vatican city",
+
+"northen islands":"northern ireland",
+"northen ireland":"northern ireland",
+"northern ireland":"northern ireland",
+
+"burnai":"butnai",
+"brunei":"butnai",
+"butnai":"butnai",
+
+"new zealnd":"new zealand",
+"new zealand":"new zealand",
+
+"venazuela":"venasuela",
+"venzuela":"venasuela",
+"venasuela":"venasuela",
+
+"crotia":"croatia",
+"croatia":"croatia",
+
+"kosovo":"kosavo",
+"kosavo":"kosavo",
+
+"morocco":"moroco",
+"moroco":"moroco",
+
+"tanzania":"tanzenia",
+"tanzenia":"tanzenia",
+
+"tuvelu":"tuvalu",
+"tuvalu":"tuvalu",
+
+"albinia":"albania",
+"albania":"albania",
+
+"ivary coast":"ivary cost (cote d'ivire)",
+"cote d'ivoire":"ivary cost (cote d'ivire)",
+"ivary cost (cote d'ivire)":"ivary cost (cote d'ivire)",
+
+"austaralia":"australia",
+"australia":"australia",
+
+"ecudor":"equador",
+"equador":"equador",
+
+"khazachstan":"kazechstan",
+"kazakhstan":"kazechstan",
+"kazechstan":"kazechstan",
+
+"russsia":"russia",
+"russia":"russia",
+
+"denmark":"denemark",
+"denemark":"denemark",
+
+"belguim":"belgium",
+"belgium":"belgium",
+
+"philippines":"philapins",
+"philapins":"philapins",
+
+"rawnada":"rawnada",
+"rwanda":"rawnada",
+
+"venzuela":"venasuela",
+
+"jamaica":"jamica",
+"jamica":"jamica"
+};
+
+function key(name){
+  let x=String(name).trim().toLowerCase();
+  let old="";
+  while(x!==old){
+    old=x;
+    x=aliases[x]||x;
+  }
+  return x;
+}
+
+function same(a,b){
+  return key(a)===key(b);
+}
+
+/* =========================
+   REMOVE DUPLICATES
+========================= */
+
+const allCountries=[];
+const seen=new Set();
+
+Object.values(regions).flat().forEach(c=>{
+  const k=key(c);
+  if(!seen.has(k)){
+    seen.add(k);
+    allCountries.push(c);
+  }
+});
+
+/* =========================
+   RANKING
+========================= */
+
+const rankingTop=[
+"canada","iceland","japan","panama","finland","australia","usa","mexico",
+"france","england","poland","ireland","colombia","equador","germany",
+"latvia","siera leon","netherlands","sweden","scotland","kenya",
+"new zealand","st lucia","chile","jamica","switzerland","belgium",
+"denemark","estonia","kazechstan","turkye","dr congo","togo","china",
+"india","russia","south africa","spain","venazuela","bulgaria","ukraine",
+"portugal","romania","philapins","norway","italy","rawnada","argentina",
+"croatia","kosavo","israel","moroco","brazil","costa rica","fiji",
+"north korea","moldova","austria","czechia","greece","nigiria","tanzania",
+"haiti","nicaragua","south korea","tuvelu","peru","barbedos","senegal",
+"serbia","guam","hong kong","cureçao","uruguy","libiria","hungry",
+"bosnia and herchegovina","ivary coast","albinia","ghana","san marino",
+"nepal","vatican","malta","laos","thailand","vietnam","sudi arabia",
+"the bahamas","andora","wales"
+];
+
+const ranking=[];
+
+function addRankCountry(c){
+  const k=key(c);
+  if(!ranking.some(x=>key(x)===k)) ranking.push(c);
+}
+
+rankingTop.forEach(addRankCountry);
+allCountries.forEach(addRankCountry);
+
+function rankOf(country){
+  const i=ranking.findIndex(x=>same(x,country));
+  return i<0?999:i+1;
+}
+
+/* =========================
+   DOLLS / PLAYERS
+========================= */
+
+const dolls=[
+["pong","canada","gk",1],
+["muffin","canada","st",9],
+["haterin","canada","cb",5],
+["sabrina","canada","cm",8],
+["pingwiny jr","canada","lw",8],
+["sling","canada","lb",4],
+["pingy","canada","cam",9],
+["bullet","canada","cam",4],
+["rem","canada","rw",9],
+
+["saffin","usa","rw",10],
+["choper","usa","st",6],
+["eep","usa","lwb",9],
+["cow","usa","lw",5],
+["ice","usa","cam",7],
+
+["unili","mexico","lw",8],
+["snac","mexico","st",8],
+["baby pickels","mexico","rw",7],
+
+["kwakel","jamica","lw",7],
+["pen pen","panama","rw",10],
+["rocky","panama","lw",9],
+["fark","st lucia","st",8],
+
+["julyswitch","argentina","gk",1],
+["mursh","colombia","cam",6],
+["zevel","equador","rb",5],
+["happyno","venasuela","gk",5],
+["masco","chile","cm",5],
+
+["corky","siera leon","lb",8],
+["slhip","rawnada","cb",1],
+["cif","togo","cdm",3],
+["soos","south africa","cdm",4],
+["chimp","dr congo","lw",6],
+["banany","kenya","st",6],
+["ely","kenya","gk",2],
+
+["kiwi","new zealand","st",8],
+["drac","australia","st",7],
+["moow","australia","st",6],
+["dodo","australia","lw",9],
+
+["danny","philapins","cb",4],
+["weby","india","gk",4],
+["pandy","china","cam",5],
+["ramen","japan","cam",10],
+["yummy","japan","rw",5],
+
+["blip plop","kazechstan","cdm",7],
+["fip","russia","rb",1],
+["mewstronaut","russia","cam",3],
+["rolly","ukraine","cdm",2],
+
+["ax","finland","cam",10],
+["shelly","finland","gk",9],
+["hute","sweden","cam",8],
+["tax","norway","gk",1],
+["pellow","norway","st",3],
+
+["blossem","iceland","st",9],
+["fung","iceland","cdm",6],
+["buzzy","iceland","cam",10],
+
+["billy bob","latvia","gk",8],
+["spoty","latvia","lw",4],
+["turkmoon","turkye","rw",6],
+["buttyr","bulgaria","st",7],
+["vat","romania","cm",5],
+["jama","poland","cam",10],
+
+["blindapus","germany","st",5],
+["capyburger","germany","cam",6],
+["stag","estonia","gk",6],
+["tryc","denemark","st",5],
+
+["olivia","switzerland","lw",6],
+["polo","italy","lw",3],
+["foxy","scotland","cam",8],
+["ire","ireland","st",4],
+["terly","ireland","lw",7],
+
+["lemony","netherlands","st",10],
+["waffle","belgium","cam",7],
+["tery","portugal","cm",5],
+["spertle","spain","cb",6],
+
+["hipy","france","gk",8],
+["rooni","france","st",6],
+["cute cake","france","cm",7],
+["brawly","england","cb",6],
+["paw","england","cam",3]
+];
+
+function dollsOf(country){
+  return dolls.filter(d=>same(d[1],country));
+}
+
+function hasDolls(country){
+  return dollsOf(country).length>0;
+}
+
+function hasGK(country){
+  return dollsOf(country).some(d=>d[2]==="gk");
+}
+
+function strength(country){
+  const ds=dollsOf(country);
+  if(!ds.length)return 0;
+  return ds.reduce((a,d)=>a+d[3],0)/ds.length;
+}
+
+/* =========================
+   CUPS
+========================= */
+
+const cups={
+international:{
+"National Champions Cup":null,
+"NCC 2":null
+},
+europa:{
+"Euro":null,
+"Euro Qualification":regions.Europe,
+"Baltic Cup":["latvia","estonia","lithunaia"],
+"Balkan Cup":[
+"bulgaria","greece","turkye","albania","north macadonia",
+"kosavo","montanegro","serbia","bosnia and herchegovina",
+"croatia","slovinia","romania"
+]
+},
+asia:{
+"Asian Cup":null,
+"Asian Cup Qualification":regions.Asia,
+"Cupestan":[
+"kazechstan","tajikistan","turkministan","uzbecistan",
+"kyrgistan","afgenistan","pakistan"
+],
+"Middle East Cup":[
+"lebanon","syria","jorden","iraq","sudi arabia","kuwait",
+"baharain","qatar","uae","oman","yeman"
+]
+},
+africa:{
+"African Cup":null,
+"African Cup Qualification":regions.Africa
+},
+americas:{
+"American Cup":null,
+"South American Qualification":regions["South America"],
+"North American Qualification":regions["North America"],
+"Central Cup":[
+"panama","costa rica","nicaragua","honduras","guatamala",
+"el salvador","belize"
+]
+},
+ociania:{
+"Oceania Cup":regions.Oceania
+}
+};
+
+function regionTeams(region,count){
+  return regions[region]
+    .slice()
+    .sort((a,b)=>rankOf(a)-rankOf(b))
+    .slice(0,count);
+}
+
+function getCupTeams(group,cup){
+  if(cup==="National Champions Cup")
+    return [
+      ...regionTeams("Africa",10),
+      ...regionTeams("South America",8),
+      ...regionTeams("North America",10),
+      ...regionTeams("Oceania",6),
+      ...regionTeams("Asia",14),
+      ...regionTeams("Europe",16)
+    ];
+
+  if(cup==="NCC 2")
+    return ranking.slice(-16);
+
+  if(cup==="Euro")
+    return regionTeams("Europe",24);
+
+  if(cup==="Asian Cup")
+    return regionTeams("Asia",24);
+
+  if(cup==="African Cup")
+    return regionTeams("Africa",16);
+
+  if(cup==="American Cup"){
+    return [
+      ...regionTeams("South America",6),
+      ...regionTeams("North America",10)
+    ];
+  }
+
+  return cups[group]?.[cup]||[];
+}
+
+/* =========================
+   MATCH SIMULATION
+========================= */
+
+function canScore(country,opponent,penalty=false){
+  const own=hasDolls(country);
+  const opp=hasDolls(opponent);
+
+  if(penalty)return hasDolls(country)||hasGK(country);
+
+  if(own)return true;
+
+  if(!opp && hasGK(country))return true;
+
+  return false;
+}
+
+function scoreChance(country,opponent){
+  if(!canScore(country,opponent,false))return 0;
+
+  const s=strength(country);
+  const g=hasGK(country);
+
+  let chance=.08+s*.035;
+
+  if(!hasDolls(opponent))chance+=.06;
+  if(g && !hasDolls(country))chance=.045;
+
+  return Math.min(.35,chance);
+}
+
+function goalCount(a,b){
+  let goals=0;
+  const ca=scoreChance(a,b);
+
+  if(ca<=0)return 0;
+
+  const strengthBonus=Math.min(1,strength(a)/10);
+
+  for(let i=0;i<16;i++){
+    let chance=ca*(.7+.3*strengthBonus);
+    if(Math.random()<chance)goals++;
+  }
+
+  return Math.min(16,goals);
+}
+
+function simulateMatch(a,b,allowDraw=true){
+  let ga=goalCount(a,b);
+  let gb=goalCount(b,a);
+
+  if(!allowDraw && ga===gb){
+    const pa=canScore(a,b,true);
+    const pb=canScore(b,a,true);
+
+    if(pa||pb){
+      if(pa&&pb){
+        Math.random()<.5?ga++:gb++;
+      }else if(pa){
+        ga++;
+      }else{
+        gb++;
+      }
+    }
+  }
+
+  return {a,b,ga,gb};
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+const navItems=[
+["home","HOME"],
+["cups","NATION CUPS"],
+["friendly","FRIENDLY"],
+["nations","NATIONS"],
+["rankings","RANKINGS"],
+["dolls","DOLLS"],
+["history","HISTORY"]
+];
+
+const nav=document.getElementById("nav");
+const app=document.getElementById("app");
+
+let currentPage="home";
+let historyMatches=[];
+
+navItems.forEach(([id,label])=>{
+  const b=document.createElement("button");
+  b.id="nav-"+id;
+  b.textContent=label;
+  b.onclick=()=>page(id);
+  nav.appendChild(b);
+});
+
+function setActive(id){
+  navItems.forEach(x=>{
+    document.getElementById("nav-"+x[0]).classList.toggle("active",x[0]===id);
+  });
+}
+
+/* =========================
+   PAGES
+========================= */
+
+function page(id){
+  currentPage=id;
+  setActive(id);
+
+  if(id==="home")homePage();
+  if(id==="cups")cupsPage();
+  if(id==="friendly")friendlyPage();
+  if(id==="nations")nationsPage();
+  if(id==="rankings")rankingsPage();
+  if(id==="dolls")dollsPage();
+  if(id==="history")historyPage();
+}
+
+function homePage(){
+  app.innerHTML=`
+    <div class="card">
+      <h2>Doll Ball Nations</h2>
+      <p>International Doll Ball football simulation.</p>
+      <div class="grid">
+        <button onclick="page('cups')">Nation Cups</button>
+        <button onclick="page('friendly')">Friendly Match</button>
+        <button onclick="page('rankings')">World Rankings</button>
+        <button onclick="page('nations')">Nations</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Top 10</h3>
+      <div class="list">
+        ${ranking.slice(0,10).map((c,i)=>`
+          <div class="row">
+            <span><span class="rank">${i+1}</span>${c}</span>
+            <span class="badge">${dollsOf(c).length} dolls</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Players</h3>
+      <p>${dolls.length} registered dolls</p>
+      <p>${allCountries.length} unique nations</p>
+    </div>
+  `;
+}
+
+function cupsPage(){
+  app.innerHTML=`
+    <h2>Nation Cups</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>International</h3>
+        ${Object.keys(cups.international).map(c=>
+          `<button onclick="openCup('international','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+
+      <div class="card">
+        <h3>Europa</h3>
+        ${Object.keys(cups.europa).map(c=>
+          `<button onclick="openCup('europa','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+
+      <div class="card">
+        <h3>Asia</h3>
+        ${Object.keys(cups.asia).map(c=>
+          `<button onclick="openCup('asia','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+
+      <div class="card">
+        <h3>Africa</h3>
+        ${Object.keys(cups.africa).map(c=>
+          `<button onclick="openCup('africa','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+
+      <div class="card">
+        <h3>Americas</h3>
+        ${Object.keys(cups.americas).map(c=>
+          `<button onclick="openCup('americas','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+
+      <div class="card">
+        <h3>Ociania</h3>
+        ${Object.keys(cups.ociania).map(c=>
+          `<button onclick="openCup('ociania','${c}')">${c}</button>`
+        ).join("<br><br>")}
+      </div>
+    </div>
+  `;
+}
+
+function openCup(group,cup){
+  const teams=getCupTeams(group,cup);
+
+  app.innerHTML=`
+    <button class="secondary" onclick="cupsPage()">← Back</button>
+    <div class="card">
+      <h2>${cup}</h2>
+      <p class="small">${teams.length} teams</p>
+      <div id="cupMatches"></div>
+    </div>
+  `;
+
+  const box=document.getElementById("cupMatches");
+
+  if(!teams.length){
+    box.innerHTML="<p>No teams available.</p>";
+    return;
+  }
+
+  if(teams.length===1){
+    box.innerHTML=`<div class="match">${teams[0]}</div>`;
+    return;
+  }
+
+  let pairs=[];
+  for(let i=0;i<teams.length;i+=2){
+    if(teams[i+1])pairs.push([teams[i],teams[i+1]]);
+  }
+
+  box.innerHTML=pairs.map((p,i)=>`
+    <div class="match" id="cm-${i}">
+      <b>${p[0]} vs ${p[1]}</b>
+      <div class="score">— : —</div>
+      <button onclick="runCupMatch('${encodeURIComponent(p[0])}','${encodeURIComponent(p[1])}',${i})">
+        Play Match
+      </button>
+    </div>
+  `).join("");
+}
+
+function runCupMatch(a,b,i){
+  a=decodeURIComponent(a);
+  b=decodeURIComponent(b);
+
+  const box=document.getElementById("cm-"+i);
+  if(!box)return;
+
+  box.innerHTML=`
+    <b>${a} vs ${b}</b>
+    <div class="score live">MATCH LIVE</div>
+    <div id="events-${i}" class="small"></div>
+  `;
+
+  const events=document.getElementById("events-"+i);
+
+  let step=0;
+  let ga=0,gb=0;
+
+  const timer=setInterval(()=>{
+    step++;
+
+    if(step<=12){
+      const scorer=Math.random()<scoreChance(a,b) ? a :
+                    Math.random()<scoreChance(b,a) ? b : null;
+
+      if(scorer===a)ga++;
+      if(scorer===b)gb++;
+
+      events.innerHTML+=`<div>${step}' ${scorer?scorer+" scores!":"No goal."}</div>`;
+    }else{
+      clearInterval(timer);
+
+      box.querySelector(".score").className="score";
+      box.querySelector(".score").textContent=`${ga} : ${gb}`;
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:"Cup"
+      });
+    }
+  },450);
+}
+
+/* =========================
+   FRIENDLY
+========================= */
+
+function friendlyPage(){
+  app.innerHTML=`
+    <div class="card">
+      <h2>Friendly Match</h2>
+      <p class="small">Friendly matches do not change rankings.</p>
+
+      <label>Team 1</label>
+      <input id="fa" placeholder="Country">
+
+      <label>Team 2</label>
+      <input id="fb" placeholder="Country">
+
+      <button onclick="startFriendly()">Start Match</button>
+    </div>
+
+    <div id="friendlyResult"></div>
+  `;
+}
+
+function startFriendly(){
+  const a=document.getElementById("fa").value.trim();
+  const b=document.getElementById("fb").value.trim();
+
+  if(!a||!b)return;
+
+  const result=document.getElementById("friendlyResult");
+
+  let ga=0,gb=0,minute=0;
+
+  result.innerHTML=`
+    <div class="card">
+      <h3>${a} vs ${b}</h3>
+      <div id="friendlyScore" class="score">0 : 0</div>
+      <div id="friendlyEvents"></div>
+    </div>
+  `;
+
+  const score=document.getElementById("friendlyScore");
+  const events=document.getElementById("friendlyEvents");
+
+  const timer=setInterval(()=>{
+    minute+=5;
+
+    const roll=Math.random();
+
+    if(roll<scoreChance(a,b)*.55){
+      ga=Math.min(16,ga+1);
+      events.innerHTML+=`<div>${minute}' ${a} scores!</div>`;
+    }else if(roll<scoreChance(a,b)*.55+scoreChance(b,a)*.55){
+      gb=Math.min(16,gb+1);
+      events.innerHTML+=`<div>${minute}' ${b} scores!</div>`;
+    }else{
+      events.innerHTML+=`<div>${minute}' No goal.</div>`;
+    }
+
+    score.textContent=`${ga} : ${gb}`;
+
+    if(minute>=90){
+      clearInterval(timer);
+      events.innerHTML+=`<br><b>FULL TIME</b>`;
+
+      historyMatches.unshift({
+        a,b,ga,gb,
+        type:"Friendly"
+      });
+    }
+  },500);
+}
+
+/* =========================
+   NATIONS
+========================= */
+
+function nationsPage(){
+  app.innerHTML=`
+    <h2>Nations</h2>
+    <input id="nationSearch" placeholder="Search nations..." oninput="filterNations()">
+    <div id="nationList" class="list"></div>
+  `;
+
+  filterNations();
+}
+
+function filterNations(){
+  const q=(document.getElementById("nationSearch")?.value||"").toLowerCase();
+
+  const list=ranking.filter(c=>
+    c.toLowerCase().includes(q)
+  );
+
+  document.getElementById("nationList").innerHTML=list.map(c=>`
+    <div class="row">
+      <span>
+        <span class="rank">${rankOf(c)}</span>
+        ${c}
+      </span>
+      <span class="badge">${dollsOf(c).length} dolls</span>
+    </div>
+  `).join("");
+}
+
+/* =========================
+   RANKINGS
+========================= */
+
+function rankingsPage(){
+  app.innerHTML=`
+    <div class="card">
+      <h2>World Rankings</h2>
+      <p class="small">Current Doll Ball nation ranking</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nation</th>
+            <th>Dolls</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ranking.map((c,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${c}</td>
+              <td>${dollsOf(c).length}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================
+   DOLLS
+========================= */
+
+function dollsPage(){
+  app.innerHTML=`
+    <h2>Dolls</h2>
+    <input id="dollSearch" placeholder="Search dolls..." oninput="filterDolls()">
+    <div id="dollList" class="list"></div>
+  `;
+
+  filterDolls();
+}
+
+function filterDolls(){
+  const q=(document.getElementById("dollSearch")?.value||"").toLowerCase();
+
+  const list=dolls.filter(d=>
+    d[0].toLowerCase().includes(q) ||
+    d[1].toLowerCase().includes(q)
+  );
+
+  document.getElementById("dollList").innerHTML=list.map(d=>`
+    <div class="row">
+      <div>
+        <b>${d[0]}</b>
+        <div class="small">${d[1]} · ${d[2].toUpperCase()}</div>
+      </div>
+      <span class="badge">${d[3]}/10</span>
+    </div>
+  `).join("");
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+function historyPage(){
+  app.innerHTML=`
+    <div class="card">
+      <h2>Match History</h2>
+      ${
+        historyMatches.length?
+        historyMatches.map(m=>`
+          <div class="match">
+            <div class="small">${m.type}</div>
+            <b>${m.a} ${m.ga} : ${m.gb} ${m.b}</b>
+          </div>
+        `).join(""):
+        "<p>No matches played yet.</p>"
+      }
+    </div>
+  `;
+}
+
+/* =========================
+   START
+========================= */
+
+page("home");
+</script>
+
+</body>
+</html>
