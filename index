@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doll Ball Nations</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#08111f;color:white;font-family:Arial}
+header{background:#101d31;padding:15px;text-align:center}
+h1{margin:0 0 12px}
+nav{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:10px 14px;background:#263955;color:white;font-weight:bold}
+button.active{background:#4d78ff}
+main{max-width:700px;margin:auto;padding:12px}
+.panel{background:#111e31;border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:9px;padding:9px;border-bottom:1px solid #26344a}
+.pos{width:32px;text-align:center;font-weight:bold}
+.flag{font-size:21px}.name{flex:1}
+.small{font-size:12px;color:#9eabc0}
+select{width:100%;padding:11px;margin:6px 0 10px;border:0;border-radius:9px;background:#22334b;color:white}
+.hidden{display:none}
+.result{text-align:center;padding:15px;font-size:18px}
+.card{background:#17263b;border-radius:11px;padding:13px;margin:8px 0;display:flex;justify-content:space-between}
+</style>
+</head>
+
+<body>
+<header>
+<h1>🌍 Doll Ball Nations</h1>
+<nav>
+<button id="r" class="active" onclick="page('rank')">Rankings</button>
+<button id="c" onclick="page('cups')">Cups</button>
+<button id="f" onclick="page('friendly')">Friendly</button>
+</nav>
+</header>
+
+<main>
+
+<section id="rank">
+<div class="panel">
+<h2>World Rankings</h2>
+<div class="small">
+Doll Ball world ranking. Regen strength affects results.
+Rankings stay saved on this device.
+</div>
+<div id="list"></div>
+</div>
+</section>
+
+<section id="cups" class="hidden">
+<div class="panel">
+<h2>🏆 Cups</h2>
+<div class="card"><b>Doll Ball World Cup</b><span>🌎</span></div>
+<div class="card"><b>Doll Ball Nations Cup</b><span>🏆</span></div>
+<div class="card"><b>Doll Ball Junior Cup</b><span>⭐</span></div>
+<div class="card"><b>Doll Ball Super Cup</b><span>👑</span></div>
+<p class="small">Cup matches can change world rankings.</p>
+</div>
+</section>
+
+<section id="friendly" class="hidden">
+<div class="panel">
+<h2>🤝 Friendly</h2>
+<div class="small">
+Friendly games never save results and never change rankings.
+</div>
+<select id="a"></select>
+<select id="b"></select>
+<button onclick="friendly()">Play Friendly</button>
+<div id="out"></div>
+</div>
+</section>
+
+</main>
+
+<script>
+
+/* =====================================================
+   YOUR OFFICIAL DOLL BALL RANKING
+   The duplicate #38 was corrected:
+   Venezuela = #39 and everything after it moved +1.
+   ===================================================== */
+
+const top=[
+"Canada","Iceland","Japan","Panama","Finland","Australia","USA",
+"Mexico","France","England","Poland","Ireland","Colombia","Ecuador",
+"Germany","Latvia","Sierra Leone","Netherlands","Sweden","Scotland",
+"Kenya","New Zealand","St Lucia","Chile","Jamaica","Switzerland",
+"Belgium","Denmark","Estonia","Kazakhstan","Türkiye","DR Congo",
+"Togo","China","India","Russia","South Africa","Spain","Venezuela",
+"Bulgaria","Ukraine","Portugal","Romania","Philippines","Norway",
+"Italy","Rwanda","Argentina","Croatia","Kosovo","Israel","Morocco",
+"Brazil","Costa Rica","Fiji","North Korea","Moldova","Austria",
+"Czechia","Greece","Nigeria","Tanzania","Haiti","Nicaragua",
+"South Korea","Tuvalu","Peru","Barbados","Senegal","Serbia","Guam",
+"Hong Kong","Curaçao","Uruguay","Liberia","Hungary",
+"Bosnia and Herzegovina","Ivory Coast","Albania","Ghana","San Marino",
+"Nepal","Vatican City","Malta","Laos","Thailand","Vietnam",
+"Saudi Arabia","The Bahamas","Andorra","Wales"
+];
+
+
+/* =====================================================
+   ALL DOLL BALL COUNTRIES / TERRITORIES YOU PROVIDED
+   ===================================================== */
+
+const all=[
+
+/* NORTH AMERICA */
+"Canada","USA","Mexico","Bermuda","Jamaica","Cuba","Haiti",
+"Dominica","Dominican Republic","The Bahamas","Guyana","Suriname",
+"French Guiana","Belize","Guatemala","El Salvador","Honduras",
+"Nicaragua","Costa Rica","Panama","Aruba","Curaçao","Puerto Rico",
+"Anguilla","St Kitts and Nevis","Antigua and Barbuda","St Lucia",
+"St Vincent and the Grenadines","Grenada","Barbados","Trinidad and Tobago",
+
+/* SOUTH AMERICA */
+"Venezuela","Ecuador","Colombia","Peru","Brazil","Bolivia","Chile",
+"Paraguay","Argentina","Uruguay",
+
+/* OCEANIA DOLL BALL ORGANIZATION */
+"Australia","New Zealand","Papua New Guinea","Hong Kong","Macau","Fiji",
+"Tuvalu","New Caledonia","Vanuatu","Solomon Islands","Nauru",
+"Marshall Islands","Micronesia","Guam","Palau","Singapore","Bhutan",
+"Maldives","Mauritius","French Polynesia","Kiribati","Tonga","Samoa",
+"Cook Islands",
+
+/* AFRICA */
+"South Africa","Lesotho","Eswatini","Namibia","Botswana","Zimbabwe",
+"Zambia","Madagascar","Mozambique","Malawi","Comoros","Angola",
+"Seychelles","DR Congo","Congo","Gabon","Equatorial Guinea",
+"Sao Tome and Principe","Cameroon","Central African Republic",
+"South Sudan","Tanzania","Rwanda","Burundi","Kenya","Uganda","Somalia",
+"Djibouti","Ethiopia","Eritrea","Sudan","Egypt","Libya","Tunisia",
+"Niger","Chad","Algeria","Mali","Morocco","Nigeria","Benin","Togo",
+"Ghana","Burkina Faso","Ivory Coast","Liberia","Sierra Leone","Guinea",
+"Guinea-Bissau","Senegal","The Gambia","Cabo Verde","Mauritania",
+
+/* ASIA */
+"Jordan","Lebanon","Syria","Iraq","Saudi Arabia","Oman","Yemen","UAE",
+"Qatar","Bahrain","Kuwait","Iran","Turkmenistan","Uzbekistan",
+"Tajikistan","Kyrgyzstan","Afghanistan","Pakistan","China","Mongolia",
+"India","Nepal","Bhutan","Sri Lanka","Bangladesh","Myanmar","Laos",
+"Cambodia","Thailand","Vietnam","Malaysia","Indonesia","Taiwan",
+"Timor-Leste","Philippines","South Korea","North Korea","Japan",
+
+/* EUROPE / DOLL BALL EUROPE */
+"Russia","Kazakhstan","Israel","Türkiye","Cyprus","Georgia","Azerbaijan",
+"Armenia","Greece","Bulgaria","North Macedonia","Albania","Montenegro",
+"Kosovo","Serbia","Bosnia and Herzegovina","Croatia","Slovenia","Romania",
+"Moldova","Ukraine","Belarus","Latvia","Poland","Lithuania","Estonia",
+"Finland","Sweden","Norway","Iceland","Greenland","Faroe Islands",
+"Slovakia","Hungary","Austria","Czechia","Malta","Italy","Vatican City",
+"San Marino","Denmark","Germany","Netherlands","Belgium","Luxembourg",
+"Liechtenstein","Switzerland","France","Monaco","Andorra","Spain",
+"Portugal","Gibraltar","England","Wales","Scotland","Northern Ireland",
+"Ireland"
+
+];
+
+
+/* =====================================================
+   REMOVE DUPLICATES
+   ===================================================== */
+
+const unique=[...new Set(all)];
+
+
+/* =====================================================
+   STRENGTH
+   Higher = stronger regen/player pool.
+   This is only used for the NEW #92+ teams.
+   ===================================================== */
+
+const strong={
+"England":96,"France":95,"Germany":94,"Spain":93,"Italy":91,
+"Netherlands":90,"Portugal":89,"Brazil":88,"Argentina":87,
+"Croatia":82,"Belgium":86,"Switzerland":84,"Austria":80,
+"Denmark":82,"Norway":79,"Sweden":81,"Poland":83,
+"Ukraine":76,"Serbia":75,"Greece":72,"Romania":70,
+"Türkiye":78,"Russia":80,"Czechia":74,"Scotland":77,
+"Ireland":73,"Wales":76,"USA":85,"Mexico":84,
+"Canada":90,"Japan":88,"South Korea":80,"Australia":82,
+"New Zealand":70,"Colombia":83,"Ecuador":74,"Chile":78,
+"Uruguay":81,"Peru":72,"Venezuela":68,"Costa Rica":67,
+"Morocco":79,"Nigeria":76,"Senegal":74,"Ghana":70,
+"Egypt":69,"Ivory Coast":71,"Cameroon":68,"South Africa":66,
+"DR Congo":73,"Algeria":67,"Tunisia":65,"Mali":64,
+"Kenya":61,"Tanzania":58,"Sierra Leone":62,"China":64,
+"India":60,"Iran":68,"Saudi Arabia":65,"Qatar":63,
+"Israel":72
+};
+
+
+/* =====================================================
+   INITIAL RANKING
+   ===================================================== */
+
+function strength(name){
+
+ if(strong[name])return strong[name];
+
+ /* deterministic strength so it doesn't randomly change */
+ let x=0;
+ for(let i=0;i<name.length;i++)
+  x=(x+name.charCodeAt(i)*(i+3))%100;
+
+ return 35+x*.3;
+}
+
+
+/* =====================================================
+   BUILD REMAINING COUNTRIES
+   ===================================================== */
+
+let remaining=unique.filter(x=>!top.includes(x));
+
+remaining.sort((a,b)=>strength(b)-strength(a));
+
+
+/* =====================================================
+   FINAL COUNTRY ORDER
+   ===================================================== */
+
+let order=[...top,...remaining];
+
+
+/* =====================================================
+   SAVED DATA
+   ===================================================== */
+
+let saved=localStorage.getItem("DB_NATIONS_RANKING");
+
+let teams;
+
+if(saved){
+
+ teams=JSON.parse(saved);
+
+ /* Add any new country that wasn't in an older save */
+ for(const n of order){
+  if(!teams.some(x=>x.name===n)){
+   teams.push({
+    name:n,
+    points:strength(n)
+   });
+  }
+ }
+
+}else{
+
+ teams=order.map((name,i)=>({
+  name:name,
+  points:i<top.length ? 1000-i*5 : 500-strength(name)
+ }));
+
+ localStorage.setItem(
+  "DB_NATIONS_RANKING",
+  JSON.stringify(teams)
+ );
+
+}
+
+
+/* =====================================================
+   FLAGS
+   ===================================================== */
+
+const flags={
+Canada:"🇨🇦",USA:"🇺🇸",Mexico:"🇲🇽",Iceland:"🇮🇸",
+Japan:"🇯🇵",Panama:"🇵🇦",Finland:"🇫🇮",Australia:"🇦🇺",
+France:"🇫🇷",England:"🏴",Poland:"🇵🇱",Ireland:"🇮🇪",
+Colombia:"🇨🇴",Ecuador:"🇪🇨",Germany:"🇩🇪",Latvia:"🇱🇻",
+SierraLeone:"🇸🇱",Netherlands:"🇳🇱",Sweden:"🇸🇪",
+Scotland:"🏴",Kenya:"🇰🇪","New Zealand":"🇳🇿",
+"St Lucia":"🇱🇨",Chile:"🇨🇱",Jamaica:"🇯🇲",
+Switzerland:"🇨🇭",Belgium:"🇧🇪",Denmark:"🇩🇰",
+Estonia:"🇪🇪",Kazakhstan:"🇰🇿","Türkiye":"🇹🇷",
+"DR Congo":"🇨🇩",Togo:"🇹🇬",China:"🇨🇳",India:"🇮🇳",
+Russia:"🇷🇺","South Africa":"🇿🇦",Spain:"🇪🇸",
+Venezuela:"🇻🇪",Bulgaria:"🇧🇬",Ukraine:"🇺🇦",
+Portugal:"🇵🇹",Romania:"🇷🇴",Philippines:"🇵🇭",
+Norway:"🇳🇴",Italy:"🇮🇹",Rwanda:"🇷🇼",Argentina:"🇦🇷",
+Croatia:"🇭🇷",Kosovo:"🇽🇰",Israel:"🇮🇱",Morocco:"🇲🇦",
+Brazil:"🇧🇷","Costa Rica":"🇨🇷",Fiji:"🇫🇯",
+"North Korea":"🇰🇵",Moldova:"🇲🇩",Austria:"🇦🇹",
+Czechia:"🇨🇿",Greece:"🇬🇷",Nigeria:"🇳🇬",
+Tanzania:"🇹🇿",Haiti:"🇭🇹",Nicaragua:"🇳🇮",
+"South Korea":"🇰🇷",Tuvalu:"🇹🇻",Peru:"🇵🇪",
+Barbados:"🇧🇧",Senegal:"🇸🇳",Serbia:"🇷🇸",Guam:"🇬🇺",
+"Hong Kong":"🇭🇰","Curaçao":"🇨🇼",Uruguay:"🇺🇾",
+Liberia:"🇱🇷",Hungary:"🇭🇺",
+"Bosnia and Herzegovina":"🇧🇦","Ivory Coast":"🇨🇮",
+Albania:"🇦🇱",Ghana:"🇬🇭","San Marino":"🇸🇲",
+Nepal:"🇳🇵","Vatican City":"🇻🇦",Malta:"🇲🇹",Laos:"🇱🇦",
+Thailand:"🇹🇭",Vietnam:"🇻🇳","Saudi Arabia":"🇸🇦",
+"The Bahamas":"🇧🇸",Andorra:"🇦🇩",Wales:"🏴"
+};
+
+
+/* =====================================================
+   DRAW
+   ===================================================== */
+
+function draw(){
+
+ teams.sort((a,b)=>b.points-a.points);
+
+ let html="";
+
+ teams.forEach((x,i)=>{
+
+  html+=`
+  <div class="row">
+   <div class="pos">${i+1}</div>
+   <div class="flag">${flags[x.name]||"🌍"}</div>
+   <div class="name">
+    ${x.name}
+    <div class="small">
+     Regen strength: ${Math.round(strength(x.name))}
+    </div>
+   </div>
+   <b>${Math.round(x.points)}</b>
+  </div>`;
+
+ });
+
+ document.getElementById("list").innerHTML=html;
+
+ localStorage.setItem(
+  "DB_NATIONS_RANKING",
+  JSON.stringify(teams)
+ );
+
+ fill();
+}
+
+
+/* =====================================================
+   PAGE
+   ===================================================== */
+
+function page(x){
+
+ ["rank","cups","friendly"].forEach(
+  id=>document.getElementById(id).classList.add("hidden")
+ );
+
+ ["r","c","f"].forEach(
+  id=>document.getElementById(id).classList.remove("active")
+ );
+
+ document.getElementById(x).classList.remove("hidden");
+
+ document.getElementById(
+  x==="rank"?"r":x==="cups"?"c":"f"
+ ).classList.add("active");
+}
+
+
+/* =====================================================
+   FRIENDLY
+   ===================================================== */
+
+function fill(){
+
+ let html=teams.map((x,i)=>
+ `<option value="${i}">
+ ${flags[x.name]||"🌍"} ${x.name}
+ </option>`
+ ).join("");
+
+ document.getElementById("a").innerHTML=html;
+ document.getElementById("b").innerHTML=html;
+
+ if(teams.length>1)
+  document.getElementById("b").selectedIndex=1;
+}
+
+
+function friendly(){
+
+ let a=teams[+document.getElementById("a").value];
+ let b=teams[+document.getElementById("b").value];
+
+ if(a===b){
+  document.getElementById("out").innerHTML=
+  '<div class="result">Choose two different nations.</div>';
+  return;
+ }
+
+ let sa=strength(a.name);
+ let sb=strength(b.name);
+
+ let pa=sa/(sa+sb);
+
+ if(Math.random()<.12){
+
+  document.getElementById("out").innerHTML=`
+  <div class="result">
+  🤝 ${a.name} and ${b.name} drew!
+  <br><span class="small">Friendly — rankings unchanged.</span>
+  </div>`;
+  return;
+ }
+
+ let winner=Math.random()<pa?a:b;
+
+ document.getElementById("out").innerHTML=`
+ <div class="result">
+ 🏆 ${flags[winner.name]||"🌍"} ${winner.name} wins!
+ <br><span class="small">Friendly — rankings unchanged.</span>
+ </div>`;
+}
+
+
+/* START */
+draw();
+
+</script>
+</body>
+</html>
