@@ -1,464 +1,423 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Doll Ball Nations Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doll Ball Nations</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#071525;color:#fff}
-button,select{font:inherit}
-button{border:0;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer}
-button:hover{filter:brightness(1.08)}
-.app{max-width:1200px;margin:auto;padding:14px}
-header{background:linear-gradient(135deg,#17345d,#10233e);border:1px solid #31537d;border-radius:20px;padding:18px;margin-bottom:12px}
-h1{margin:0 0 5px;font-size:27px}.sub{opacity:.75}
-.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:12px}
-.tabs button{background:#172942;color:#dbe9ff;white-space:nowrap}.tabs button.active{background:#2d76d2;color:white}
-.panel{background:#0d2038;border:1px solid #274668;border-radius:18px;padding:16px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.card{background:#122946;border:1px solid #2a4b6c;border-radius:15px;padding:14px}
-.card h3{margin:0 0 7px}.muted{color:#9fb4cc}
-.primary{background:#2d76d2;color:#fff}.green{background:#168a62;color:#fff}.orange{background:#b86c19;color:#fff}.red{background:#a83d4a;color:#fff}
-.small{font-size:13px}.big{font-size:30px;font-weight:800}
-.hidden{display:none!important}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{text-align:left;padding:8px;border-bottom:1px solid #28435f}
-th{color:#a9c7e7}.match{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #28435f}
-.score{font-weight:800;min-width:48px;text-align:center}
-select{background:#10253e;color:#fff;border:1px solid #365979;border-radius:10px;padding:10px}
-.notice{padding:10px;border-radius:10px;background:#122b49;color:#cfe3fb;margin:8px 0}
-#log{max-height:280px;overflow:auto}
-.country{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #203d59}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#203e5f;font-size:12px}
-@media(max-width:600px){h1{font-size:22px}.app{padding:8px}.panel{padding:12px}}
+body{margin:0;background:#08111f;color:white;font-family:Arial}
+header{background:#101d31;padding:15px;text-align:center}
+h1{margin:0 0 12px}
+nav{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:10px 14px;background:#263955;color:white;font-weight:bold}
+button.active{background:#4d78ff}
+main{max-width:700px;margin:auto;padding:12px}
+.panel{background:#111e31;border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:9px;padding:9px;border-bottom:1px solid #26344a}
+.pos{width:32px;text-align:center;font-weight:bold}
+.flag{font-size:21px}.name{flex:1}
+.small{font-size:12px;color:#9eabc0}
+select{width:100%;padding:11px;margin:6px 0 10px;border:0;border-radius:9px;background:#22334b;color:white}
+.hidden{display:none}
+.result{text-align:center;padding:15px;font-size:18px}
+.card{background:#17263b;border-radius:11px;padding:13px;margin:8px 0;display:flex;justify-content:space-between}
 </style>
 </head>
+
 <body>
-<div class="app">
 <header>
-  <h1>Doll Ball Nations Simulator</h1>
-  <div class="sub">A simulation game for the sport of Doll Ball — run cups, qualifications, rankings and international matches.</div>
+<h1>🌍 Doll Ball Nations</h1>
+<nav>
+<button id="r" class="active" onclick="page('rank')">Rankings</button>
+<button id="c" onclick="page('cups')">Cups</button>
+<button id="f" onclick="page('friendly')">Friendly</button>
+</nav>
 </header>
 
-<div class="tabs">
-  <button class="active" data-tab="home">HOME</button>
-  <button data-tab="cups">NATION CUPS</button>
-  <button data-tab="friendly">FRIENDLY</button>
-  <button data-tab="nations">NATIONS</button>
-  <button data-tab="rankings">RANKINGS</button>
-  <button data-tab="history">HISTORY</button>
+<main>
+
+<section id="rank">
+<div class="panel">
+<h2>World Rankings</h2>
+<div class="small">
+Doll Ball world ranking. Regen strength affects results.
+Rankings stay saved on this device.
 </div>
-
-<section id="home" class="tab">
-  <div class="panel">
-    <h2>Welcome to Doll Ball</h2>
-    <p>Choose <b>NATION CUPS</b> to pick a competition. Every simulation creates matches, scores, tables and a champion.</p>
-    <div class="grid">
-      <div class="card"><div class="muted">Nations</div><div class="big" id="nationCount">0</div></div>
-      <div class="card"><div class="muted">Continent groups</div><div class="big">6</div></div>
-      <div class="card"><div class="muted">Simulated competitions</div><div class="big" id="historyCount">0</div></div>
-    </div>
-  </div>
-  <div class="panel">
-    <h2>Quick Match</h2>
-    <div class="row">
-      <select id="quickA"></select>
-      <span>vs</span>
-      <select id="quickB"></select>
-      <button class="primary" onclick="quickMatch()">SIMULATE MATCH</button>
-    </div>
-    <div id="quickResult" class="notice">Pick two nations and simulate a Doll Ball match.</div>
-  </div>
-</section>
-
-<section id="cups" class="tab hidden">
-  <div class="panel">
-    <h2>Nation Cups</h2>
-    <div class="notice">Pick a section, then a competition. Qualification tournaments automatically choose the required number of teams for the final cup.</div>
-    <div class="grid" id="cupCards"></div>
-  </div>
-  <div class="panel hidden" id="competitionPanel">
-    <div class="row" style="justify-content:space-between">
-      <div><h2 id="competitionTitle" style="margin:0"></h2><div id="competitionInfo" class="muted"></div></div>
-      <button class="primary" onclick="simulateCurrent()">SIMULATE</button>
-    </div>
-    <div id="competitionOutput"></div>
-  </div>
-</section>
-
-<section id="friendly" class="tab hidden">
-  <div class="panel">
-    <h2>Friendly</h2>
-    <p class="muted">Friendly matches do NOT change world rankings, ranking ratings, ranking history, or competition results. They are just for fun.</p>
-    <div class="card">
-      <h3>Friendly Match</h3>
-      <div class="row"><select id="friendlyA"></select><span>vs</span><select id="friendlyB"></select><button class="green" onclick="friendlyMatch()">PLAY FRIENDLY</button></div>
-      <div id="friendlyResult" class="notice">Choose two nations.</div>
-    </div>
-  </div>
-  <div class="panel">
-    <h2>Friendly Cups</h2>
-    <p class="muted">Every cup can be played as a friendly version. The teams and scores are simulated, but nothing is saved to the ranking system.</p>
-    <div class="grid" id="friendlyCupCards"></div>
-  </div>
-  <div class="panel hidden" id="friendlyCompetitionPanel">
-    <div class="row" style="justify-content:space-between"><div><h2 id="friendlyCompetitionTitle" style="margin:0"></h2><div id="friendlyCompetitionInfo" class="muted"></div></div><button class="green" onclick="simulateFriendlyCup()">PLAY FRIENDLY CUP</button></div>
-    <div id="friendlyCompetitionOutput"></div>
-  </div>
-</section>
-
-<section id="nations" class="tab hidden">
-  <div class="panel">
-    <h2>Nation Database</h2>
-    <p class="muted">Doll Ball countries can change continent/federation. This is especially useful for the Oceania group, but any nation can be moved.</p>
-    <div class="row">
-      <input id="nationSearch" placeholder="Search nation..." oninput="renderNations()" style="flex:1;min-width:180px;background:#10253e;color:#fff;border:1px solid #365979;border-radius:10px;padding:10px">
-      <button class="orange" onclick="resetContinents()">RESET CONTINENTS</button>
-    </div>
-    <div id="nationList"></div>
-  </div>
-</section>
-
-<section id="rankings" class="tab hidden">
-  <div class="panel">
-    <h2>Doll Ball World Rankings</h2>
-    <p class="muted">These rankings are persistent. Closing the game or logging in again keeps the same rankings. Competitive results can change them over time.</p><button class="orange" onclick="resetWorldRankings()">RESET TO STARTING RANKINGS</button>
-    <table><thead><tr><th>#</th><th>Nation</th><th>Continent</th><th>Rating</th></tr></thead><tbody id="rankingBody"></tbody></table>
-  </div>
-</section>
-
-<section id="history" class="tab hidden">
-  <div class="panel">
-    <h2>Competition History</h2>
-    <div id="historyList"></div>
-  </div>
-</section>
-
+<div id="list"></div>
 </div>
+</section>
+
+<section id="cups" class="hidden">
+<div class="panel">
+<h2>🏆 Cups</h2>
+<div class="card"><b>Doll Ball World Cup</b><span>🌎</span></div>
+<div class="card"><b>Doll Ball Nations Cup</b><span>🏆</span></div>
+<div class="card"><b>Doll Ball Junior Cup</b><span>⭐</span></div>
+<div class="card"><b>Doll Ball Super Cup</b><span>👑</span></div>
+<p class="small">Cup matches can change world rankings.</p>
+</div>
+</section>
+
+<section id="friendly" class="hidden">
+<div class="panel">
+<h2>🤝 Friendly</h2>
+<div class="small">
+Friendly games never save results and never change rankings.
+</div>
+<select id="a"></select>
+<select id="b"></select>
+<button onclick="friendly()">Play Friendly</button>
+<div id="out"></div>
+</div>
+</section>
+
+</main>
 
 <script>
-const originalGroups = {
-  "North America":[
-    "Canada","USA","Mexico","Bermuda","Jamaica","Cuba","Haiti","Dominica","Dominican Republic","The Bahamas",
-    "Guyana","Suriname","French Guiana","Belize","Guatemala","El Salvador","Honduras","Nicaragua","Costa Rica","Panama",
-    "Aruba","Curaçao","Puerto Rico","Anguilla","St Kitts and Nevis","Antigua and Barbuda","St Lucia","St Vincent and the Grenadines",
-    "Grenada","Barbados","Trinidad and Tobago"
-  ],
-  "South America":[
-    "Venezuela","Ecuador","Colombia","Peru","Brazil","Bolivia","Chile","Paraguay","Argentina","Uruguay"
-  ],
-  "Oceania":[
-    "Australia","New Zealand","Papua New Guinea","Hong Kong","Macau","Fiji","Tuvalu","New Caledonia","Vanuatu","Solomon Islands",
-    "Nauru","Marshall Islands","Micronesia","Guam","Palau","Singapore","Bhutan","Maldives","Mauritius","French Polynesia (Tahiti)",
-    "Kiribati","Tonga","Samoa","Cook Islands"
-  ],
-  "Africa":[
-    "South Africa","Lesotho","Eswatini","Namibia","Botswana","Zimbabwe","Zambia","Madagascar","Mozambique","Malawi","Comoros",
-    "Angola","Seychelles","DR Congo","Congo","Gabon","Equatorial Guinea","São Tomé and Príncipe","Cameroon","Central African Republic",
-    "South Sudan","Tanzania","Rwanda","Burundi","Kenya","Uganda","Somalia","Djibouti","Ethiopia","Eritrea","Sudan","Egypt","Libya",
-    "Tunisia","Niger","Chad","Algeria","Mali","Morocco","Nigeria","Benin","Togo","Ghana","Burkina Faso","Ivory Coast (Côte d'Ivoire)",
-    "Liberia","Sierra Leone","Guinea","Guinea-Bissau","Senegal","The Gambia","Cabo Verde (Cape Verde)","Mauritania"
-  ],
-  "Asia":[
-    "Jordan","Lebanon","Syria","Iraq","Saudi Arabia","Oman","Yemen","UAE","Qatar","Bahrain","Kuwait","Iran","Turkmenistan",
-    "Uzbekistan","Tajikistan","Kyrgyzstan","Afghanistan","Pakistan","China","Mongolia","India","Nepal","Bhutan","Sri Lanka",
-    "Bangladesh","Myanmar (Burma)","Laos","Cambodia","Thailand","Vietnam","Malaysia","Indonesia","Taiwan","Timor-Leste (East Timor)",
-    "Philippines","South Korea","North Korea","Japan"
-  ],
-  "Europe":[
-    "Russia","Kazakhstan","Israel","Türkiye","Cyprus","Georgia","Azerbaijan","Armenia","Greece","Bulgaria","North Macedonia","Albania",
-    "Montenegro","Kosovo","Serbia","Bosnia and Herzegovina","Croatia","Slovenia","Romania","Moldova","Ukraine","Belarus","Latvia","Poland",
-    "Lithuania","Estonia","Finland","Sweden","Norway","Iceland","Greenland","Faroe Islands","Slovakia","Hungary","Austria","Czechia",
-    "Malta","Italy","Vatican City","San Marino","Denmark","Germany","Netherlands","Belgium","Luxembourg","Liechtenstein","Switzerland",
-    "France","Monaco","Andorra","Spain","Portugal","Gibraltar","England","Wales","Scotland","Northern Ireland","Ireland"
-  ]
+
+/* =====================================================
+   YOUR OFFICIAL DOLL BALL RANKING
+   The duplicate #38 was corrected:
+   Venezuela = #39 and everything after it moved +1.
+   ===================================================== */
+
+const top=[
+"Canada","Iceland","Japan","Panama","Finland","Australia","USA",
+"Mexico","France","England","Poland","Ireland","Colombia","Ecuador",
+"Germany","Latvia","Sierra Leone","Netherlands","Sweden","Scotland",
+"Kenya","New Zealand","St Lucia","Chile","Jamaica","Switzerland",
+"Belgium","Denmark","Estonia","Kazakhstan","Türkiye","DR Congo",
+"Togo","China","India","Russia","South Africa","Spain","Venezuela",
+"Bulgaria","Ukraine","Portugal","Romania","Philippines","Norway",
+"Italy","Rwanda","Argentina","Croatia","Kosovo","Israel","Morocco",
+"Brazil","Costa Rica","Fiji","North Korea","Moldova","Austria",
+"Czechia","Greece","Nigeria","Tanzania","Haiti","Nicaragua",
+"South Korea","Tuvalu","Peru","Barbados","Senegal","Serbia","Guam",
+"Hong Kong","Curaçao","Uruguay","Liberia","Hungary",
+"Bosnia and Herzegovina","Ivory Coast","Albania","Ghana","San Marino",
+"Nepal","Vatican City","Malta","Laos","Thailand","Vietnam",
+"Saudi Arabia","The Bahamas","Andorra","Wales"
+];
+
+
+/* =====================================================
+   ALL DOLL BALL COUNTRIES / TERRITORIES YOU PROVIDED
+   ===================================================== */
+
+const all=[
+
+/* NORTH AMERICA */
+"Canada","USA","Mexico","Bermuda","Jamaica","Cuba","Haiti",
+"Dominica","Dominican Republic","The Bahamas","Guyana","Suriname",
+"French Guiana","Belize","Guatemala","El Salvador","Honduras",
+"Nicaragua","Costa Rica","Panama","Aruba","Curaçao","Puerto Rico",
+"Anguilla","St Kitts and Nevis","Antigua and Barbuda","St Lucia",
+"St Vincent and the Grenadines","Grenada","Barbados","Trinidad and Tobago",
+
+/* SOUTH AMERICA */
+"Venezuela","Ecuador","Colombia","Peru","Brazil","Bolivia","Chile",
+"Paraguay","Argentina","Uruguay",
+
+/* OCEANIA DOLL BALL ORGANIZATION */
+"Australia","New Zealand","Papua New Guinea","Hong Kong","Macau","Fiji",
+"Tuvalu","New Caledonia","Vanuatu","Solomon Islands","Nauru",
+"Marshall Islands","Micronesia","Guam","Palau","Singapore","Bhutan",
+"Maldives","Mauritius","French Polynesia","Kiribati","Tonga","Samoa",
+"Cook Islands",
+
+/* AFRICA */
+"South Africa","Lesotho","Eswatini","Namibia","Botswana","Zimbabwe",
+"Zambia","Madagascar","Mozambique","Malawi","Comoros","Angola",
+"Seychelles","DR Congo","Congo","Gabon","Equatorial Guinea",
+"Sao Tome and Principe","Cameroon","Central African Republic",
+"South Sudan","Tanzania","Rwanda","Burundi","Kenya","Uganda","Somalia",
+"Djibouti","Ethiopia","Eritrea","Sudan","Egypt","Libya","Tunisia",
+"Niger","Chad","Algeria","Mali","Morocco","Nigeria","Benin","Togo",
+"Ghana","Burkina Faso","Ivory Coast","Liberia","Sierra Leone","Guinea",
+"Guinea-Bissau","Senegal","The Gambia","Cabo Verde","Mauritania",
+
+/* ASIA */
+"Jordan","Lebanon","Syria","Iraq","Saudi Arabia","Oman","Yemen","UAE",
+"Qatar","Bahrain","Kuwait","Iran","Turkmenistan","Uzbekistan",
+"Tajikistan","Kyrgyzstan","Afghanistan","Pakistan","China","Mongolia",
+"India","Nepal","Bhutan","Sri Lanka","Bangladesh","Myanmar","Laos",
+"Cambodia","Thailand","Vietnam","Malaysia","Indonesia","Taiwan",
+"Timor-Leste","Philippines","South Korea","North Korea","Japan",
+
+/* EUROPE / DOLL BALL EUROPE */
+"Russia","Kazakhstan","Israel","Türkiye","Cyprus","Georgia","Azerbaijan",
+"Armenia","Greece","Bulgaria","North Macedonia","Albania","Montenegro",
+"Kosovo","Serbia","Bosnia and Herzegovina","Croatia","Slovenia","Romania",
+"Moldova","Ukraine","Belarus","Latvia","Poland","Lithuania","Estonia",
+"Finland","Sweden","Norway","Iceland","Greenland","Faroe Islands",
+"Slovakia","Hungary","Austria","Czechia","Malta","Italy","Vatican City",
+"San Marino","Denmark","Germany","Netherlands","Belgium","Luxembourg",
+"Liechtenstein","Switzerland","France","Monaco","Andorra","Spain",
+"Portugal","Gibraltar","England","Wales","Scotland","Northern Ireland",
+"Ireland"
+
+];
+
+
+/* =====================================================
+   REMOVE DUPLICATES
+   ===================================================== */
+
+const unique=[...new Set(all)];
+
+
+/* =====================================================
+   STRENGTH
+   Higher = stronger regen/player pool.
+   This is only used for the NEW #92+ teams.
+   ===================================================== */
+
+const strong={
+"England":96,"France":95,"Germany":94,"Spain":93,"Italy":91,
+"Netherlands":90,"Portugal":89,"Brazil":88,"Argentina":87,
+"Croatia":82,"Belgium":86,"Switzerland":84,"Austria":80,
+"Denmark":82,"Norway":79,"Sweden":81,"Poland":83,
+"Ukraine":76,"Serbia":75,"Greece":72,"Romania":70,
+"Türkiye":78,"Russia":80,"Czechia":74,"Scotland":77,
+"Ireland":73,"Wales":76,"USA":85,"Mexico":84,
+"Canada":90,"Japan":88,"South Korea":80,"Australia":82,
+"New Zealand":70,"Colombia":83,"Ecuador":74,"Chile":78,
+"Uruguay":81,"Peru":72,"Venezuela":68,"Costa Rica":67,
+"Morocco":79,"Nigeria":76,"Senegal":74,"Ghana":70,
+"Egypt":69,"Ivory Coast":71,"Cameroon":68,"South Africa":66,
+"DR Congo":73,"Algeria":67,"Tunisia":65,"Mali":64,
+"Kenya":61,"Tanzania":58,"Sierra Leone":62,"China":64,
+"India":60,"Iran":68,"Saudi Arabia":65,"Qatar":63,
+"Israel":72
 };
 
-let groups = structuredClone(originalGroups);
-let allNations = [];
-let ratings = {};
-let history = [];
-let currentCompetition = null;
 
-// Official starting Doll Ball World Ranking.
-// The original list had two #36 entries; this keeps the supplied order and
-// treats them as consecutive ranks: Russia #36, South Africa #37, Spain #38.
-const officialRanking = [
-  "Canada","Iceland","Japan","Panama","Finland","Australia","USA","Mexico","France","England",
-  "Poland","Ireland","Colombia","Ecuador","Germany","Latvia","Sierra Leone","Netherlands","Sweden","Scotland",
-  "Kenya","New Zealand","St Lucia","Chile","Jamaica","Switzerland","Belgium","Denmark","Estonia","Kazakhstan",
-  "Türkiye","DR Congo","Togo","China","India","Russia","South Africa","Spain","Venezuela","Bulgaria",
-  "Ukraine","Portugal","Romania","Philippines","Norway","Italy","Rwanda","Argentina","Croatia","Kosovo",
-  "Israel","Morocco","Brazil","Costa Rica","Fiji","North Korea","Moldova","Austria","Czechia","Greece",
-  "Nigeria","Tanzania","Haiti","Nicaragua","South Korea","Tuvalu","Peru","Barbados","Senegal","Serbia",
-  "Guam","Hong Kong","Curaçao","Uruguay","Liberia","Hungary","Bosnia and Herzegovina","Ivory Coast (Côte d'Ivoire)",
-  "Albania","Ghana","San Marino","Nepal","Vatican City","Malta","Laos","Thailand","Vietnam","Saudi Arabia",
-  "The Bahamas","Andorra","Wales"
-];
+/* =====================================================
+   INITIAL RANKING
+   ===================================================== */
 
-function rebuild(){
-  allNations = Object.entries(groups).flatMap(([continent, arr])=>arr.map(name=>({name,continent})));
-  document.getElementById("nationCount").textContent = allNations.length;
-  loadOrCreateRatings();
-  fillQuick();
-  fillFriendly();
-  renderNations();
-  renderRankings();
-  renderFriendlyCups();
+function strength(name){
+
+ if(strong[name])return strong[name];
+
+ /* deterministic strength so it doesn't randomly change */
+ let x=0;
+ for(let i=0;i<name.length;i++)
+  x=(x+name.charCodeAt(i)*(i+3))%100;
+
+ return 35+x*.3;
 }
 
-function loadOrCreateRatings(){
-  const saved = localStorage.getItem("dollBallWorldRatingsV2");
-  if(saved){
-    try { ratings = JSON.parse(saved); } catch(e){ ratings = {}; }
+
+/* =====================================================
+   BUILD REMAINING COUNTRIES
+   ===================================================== */
+
+let remaining=unique.filter(x=>!top.includes(x));
+
+remaining.sort((a,b)=>strength(b)-strength(a));
+
+
+/* =====================================================
+   FINAL COUNTRY ORDER
+   ===================================================== */
+
+let order=[...top,...remaining];
+
+
+/* =====================================================
+   SAVED DATA
+   ===================================================== */
+
+let saved=localStorage.getItem("DB_NATIONS_RANKING");
+
+let teams;
+
+if(saved){
+
+ teams=JSON.parse(saved);
+
+ /* Add any new country that wasn't in an older save */
+ for(const n of order){
+  if(!teams.some(x=>x.name===n)){
+   teams.push({
+    name:n,
+    points:strength(n)
+   });
   }
-  if(!Object.keys(ratings).length){
-    ratings = {};
-    const ranked = officialRanking.filter(n=>allNations.some(x=>x.name===n));
-    const rankedSet = new Set(ranked);
-    ranked.forEach((n,i)=>ratings[n]=1000+(ranked.length-i)*8);
-    const remaining = allNations.filter(n=>!rankedSet.has(n.name)).sort((a,b)=>a.name.localeCompare(b.name));
-    remaining.forEach((n,i)=>ratings[n.name]=450+(remaining.length-i)*1.5);
-    saveRatings();
-  } else {
-    allNations.forEach((n,i)=>{ if(!(n.name in ratings)) ratings[n.name]=400; });
-    saveRatings();
-  }
-}
-function saveRatings(){ localStorage.setItem("dollBallWorldRatingsV2",JSON.stringify(ratings)); }
-function resetWorldRankings(){
-  localStorage.removeItem("dollBallWorldRatingsV2");
-  ratings={};
-  loadOrCreateRatings();
-  renderRankings();
-  alert("World rankings reset to the official starting rankings.");
+ }
+
+}else{
+
+ teams=order.map((name,i)=>({
+  name:name,
+  points:i<top.length ? 1000-i*5 : 500-strength(name)
+ }));
+
+ localStorage.setItem(
+  "DB_NATIONS_RANKING",
+  JSON.stringify(teams)
+ );
+
 }
 
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function sample(a,n){return shuffle(a).slice(0,Math.min(n,a.length))}
-function byCont(c){return groups[c]||[]}
-function teamStrength(n){return ratings[n]||70}
-function match(a,b){
-  let sa=teamStrength(a), sb=teamStrength(b);
-  let la=Math.max(0,Math.round((sa/42)+(Math.random()*5-2.5)));
-  let lb=Math.max(0,Math.round((sb/42)+(Math.random()*5-2.5)));
-  if(Math.random()<0.15 && la===lb){ if(sa>=sb) la++; else lb++; }
-  return {a,b,sa:la,sb:lb,winner:la===lb?null:(la>lb?a:b)};
-}
-function simulateKnockout(teams){
-  let rounds=[], cur=shuffle(teams);
-  while(cur.length>1){
-    let next=[], games=[];
-    for(let i=0;i<cur.length;i+=2){
-      if(!cur[i+1]){next.push(cur[i]);continue}
-      let m=match(cur[i],cur[i+1]); games.push(m); next.push(m.winner||cur[i]);
-    }
-    rounds.push(games); cur=next;
-  }
-  return {champion:cur[0],rounds};
-}
-function groupStage(teams){
-  let t=teams.map(x=>({team:x,p:0,w:0,d:0,l:0,gf:0,ga:0}));
-  let games=[];
-  for(let i=0;i<teams.length;i++) for(let j=i+1;j<teams.length;j++){
-    let m=match(teams[i],teams[j]); games.push(m);
-    let A=t.find(x=>x.team===m.a),B=t.find(x=>x.team===m.b);
-    A.gf+=m.sa;A.ga+=m.sb;B.gf+=m.sb;B.ga+=m.sa;
-    if(m.sa>m.sb){A.w++;A.p+=3;B.l++}else if(m.sb>m.sa){B.w++;B.p+=3;A.l++}else{A.d++;B.d++;A.p++;B.p++}
-  }
-  t.sort((a,b)=>b.p-a.p||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
-  return {table:t,games};
-}
-function renderGames(games){
-  return games.map(m=>`<div class="match"><span>${m.a}</span><span class="score">${m.sa} - ${m.sb}</span><span>${m.b}</span></div>`).join("");
+
+/* =====================================================
+   FLAGS
+   ===================================================== */
+
+const flags={
+Canada:"🇨🇦",USA:"🇺🇸",Mexico:"🇲🇽",Iceland:"🇮🇸",
+Japan:"🇯🇵",Panama:"🇵🇦",Finland:"🇫🇮",Australia:"🇦🇺",
+France:"🇫🇷",England:"🏴",Poland:"🇵🇱",Ireland:"🇮🇪",
+Colombia:"🇨🇴",Ecuador:"🇪🇨",Germany:"🇩🇪",Latvia:"🇱🇻",
+SierraLeone:"🇸🇱",Netherlands:"🇳🇱",Sweden:"🇸🇪",
+Scotland:"🏴",Kenya:"🇰🇪","New Zealand":"🇳🇿",
+"St Lucia":"🇱🇨",Chile:"🇨🇱",Jamaica:"🇯🇲",
+Switzerland:"🇨🇭",Belgium:"🇧🇪",Denmark:"🇩🇰",
+Estonia:"🇪🇪",Kazakhstan:"🇰🇿","Türkiye":"🇹🇷",
+"DR Congo":"🇨🇩",Togo:"🇹🇬",China:"🇨🇳",India:"🇮🇳",
+Russia:"🇷🇺","South Africa":"🇿🇦",Spain:"🇪🇸",
+Venezuela:"🇻🇪",Bulgaria:"🇧🇬",Ukraine:"🇺🇦",
+Portugal:"🇵🇹",Romania:"🇷🇴",Philippines:"🇵🇭",
+Norway:"🇳🇴",Italy:"🇮🇹",Rwanda:"🇷🇼",Argentina:"🇦🇷",
+Croatia:"🇭🇷",Kosovo:"🇽🇰",Israel:"🇮🇱",Morocco:"🇲🇦",
+Brazil:"🇧🇷","Costa Rica":"🇨🇷",Fiji:"🇫🇯",
+"North Korea":"🇰🇵",Moldova:"🇲🇩",Austria:"🇦🇹",
+Czechia:"🇨🇿",Greece:"🇬🇷",Nigeria:"🇳🇬",
+Tanzania:"🇹🇿",Haiti:"🇭🇹",Nicaragua:"🇳🇮",
+"South Korea":"🇰🇷",Tuvalu:"🇹🇻",Peru:"🇵🇪",
+Barbados:"🇧🇧",Senegal:"🇸🇳",Serbia:"🇷🇸",Guam:"🇬🇺",
+"Hong Kong":"🇭🇰","Curaçao":"🇨🇼",Uruguay:"🇺🇾",
+Liberia:"🇱🇷",Hungary:"🇭🇺",
+"Bosnia and Herzegovina":"🇧🇦","Ivory Coast":"🇨🇮",
+Albania:"🇦🇱",Ghana:"🇬🇭","San Marino":"🇸🇲",
+Nepal:"🇳🇵","Vatican City":"🇻🇦",Malta:"🇲🇹",Laos:"🇱🇦",
+Thailand:"🇹🇭",Vietnam:"🇻🇳","Saudi Arabia":"🇸🇦",
+"The Bahamas":"🇧🇸",Andorra:"🇦🇩",Wales:"🏴"
+};
+
+
+/* =====================================================
+   DRAW
+   ===================================================== */
+
+function draw(){
+
+ teams.sort((a,b)=>b.points-a.points);
+
+ let html="";
+
+ teams.forEach((x,i)=>{
+
+  html+=`
+  <div class="row">
+   <div class="pos">${i+1}</div>
+   <div class="flag">${flags[x.name]||"🌍"}</div>
+   <div class="name">
+    ${x.name}
+    <div class="small">
+     Regen strength: ${Math.round(strength(x.name))}
+    </div>
+   </div>
+   <b>${Math.round(x.points)}</b>
+  </div>`;
+
+ });
+
+ document.getElementById("list").innerHTML=html;
+
+ localStorage.setItem(
+  "DB_NATIONS_RANKING",
+  JSON.stringify(teams)
+ );
+
+ fill();
 }
 
-const competitions = [
- {section:"International",name:"NCC",type:"multi",desc:"10 Africa + 8 South America + 10 North America + 6 Oceania + 14 Asia + 16 Europe.",counts:{"Africa":10,"South America":8,"North America":10,"Oceania":6,"Asia":14,"Europe":16}},
- {section:"International",name:"NCC 2",type:"worst",desc:"The 16 lowest-ranked nations.",count:16},
- {section:"Europe",name:"Euro",type:"fromqual",qual:"Euro Qualification",size:24,desc:"24 teams from European qualification."},
- {section:"Europe",name:"Euro Qualification",type:"qual",continent:"Europe",size:24,desc:"All European nations compete; 24 qualify."},
- {section:"Europe",name:"Baltic Cup",type:"fixed",teams:["Latvia","Estonia","Lithuania"],desc:"Latvia, Estonia and Lithuania."},
- {section:"Europe",name:"Balkan Cup",type:"fixed",teams:["Bulgaria","Greece","Türkiye","Albania","North Macedonia","Kosovo","Montenegro","Serbia","Bosnia and Herzegovina","Croatia","Slovenia","Romania"],desc:"Balkan regional cup."},
- {section:"Africa",name:"African Cup",type:"fromqual",qual:"African Cup Qualification",size:16,desc:"16 teams from African qualification."},
- {section:"Africa",name:"African Cup Qualification",type:"qual",continent:"Africa",size:16,desc:"All African nations compete; 16 qualify."},
- {section:"Asia",name:"Asian Cup",type:"fromqual",qual:"Asian Cup Qualification",size:24,desc:"24 teams from Asian qualification."},
- {section:"Asia",name:"Asian Cup Qualification",type:"qual",continent:"Asia",size:24,desc:"All Asian nations compete; 24 qualify."},
- {section:"Asia",name:"Cupestan",type:"fixed",teams:["Kazakhstan","Tajikistan","Turkmenistan","Uzbekistan","Kyrgyzstan","Afghanistan","Pakistan"],desc:"Central Asian regional cup."},
- {section:"Asia",name:"Middle East Cup",type:"fixed",teams:["Lebanon","Syria","Jordan","Iraq","Saudi Arabia","Kuwait","Bahrain","Qatar","UAE","Oman","Yemen"],desc:"Middle Eastern regional cup."},
- {section:"Americas",name:"American Cup",type:"multi",desc:"6 South America + 10 North America.",counts:{"South America":6,"North America":10}},
- {section:"Americas",name:"South American Qualification",type:"qual",continent:"South America",size:6,desc:"All South American nations compete; 6 qualify."},
- {section:"Americas",name:"North American Qualification",type:"qual",continent:"North America",size:10,desc:"All North American nations compete; 10 qualify."},
- {section:"Americas",name:"Central Cup",type:"fixed",teams:["Panama","Costa Rica","Nicaragua","Honduras","Guatemala","El Salvador","Belize"],desc:"Central American regional cup."}
-];
 
-function renderCupCards(){
-  let sections=["International","Europe","Africa","Asia","Americas"];
-  document.getElementById("cupCards").innerHTML=sections.map(sec=>{
-    let cs=competitions.filter(c=>c.section===sec);
-    return `<div class="card"><h3>${sec}</h3>${cs.map(c=>`<button style="width:100%;margin:4px 0;background:#1d3858;color:#fff" onclick="openCompetition('${c.name.replace(/'/g,"\\'")}')">${c.name}</button>`).join("")}</div>`
-  }).join("");
-}
-function openCompetition(name){
-  currentCompetition=competitions.find(c=>c.name===name);
-  document.getElementById("competitionPanel").classList.remove("hidden");
-  document.getElementById("competitionTitle").textContent=currentCompetition.name;
-  document.getElementById("competitionInfo").textContent=currentCompetition.desc;
-  document.getElementById("competitionOutput").innerHTML='<div class="notice">Press SIMULATE to run this competition.</div>';
-  document.getElementById("competitionPanel").scrollIntoView({behavior:"smooth"});
-}
-function eligible(c){
-  if(c.type==="fixed") return c.teams.filter(x=>allNations.some(n=>n.name===x));
-  if(c.type==="qual") return byCont(c.continent);
-  if(c.type==="worst") return [...allNations].sort((a,b)=>ratings[a.name]-ratings[b.name]).slice(0,c.count).map(n=>n.name);
-  if(c.type==="multi") return Object.entries(c.counts).flatMap(([cont,num])=>sample(byCont(cont),num));
-  return [];
-}
-function simulateCurrent(){
-  if(!currentCompetition)return;
-  let c=currentCompetition, teams;
-  if(c.type==="fromqual"){
-    let q=competitions.find(x=>x.name===c.qual);
-    teams=sample(byCont(q.continent),c.size);
-  } else teams=eligible(c);
-  teams=teams.map(x=>typeof x==="string"?x:x.name);
-  let out=`<div class="notice"><b>${teams.length} teams:</b> ${teams.join(", ")}</div>`;
-  if(c.type==="qual"){
-    let g=groupStage(teams);
-    let qualified=g.table.slice(0,c.size).map(x=>x.team);
-    out+=`<h3>Qualification table</h3>${tableHTML(g.table)}<h3>Qualified</h3><p>${qualified.join(", ")}</p>`;
-    saveHistory(c.name,qualified[0]||"Qualification completed",teams.length);
-  } else {
-    let g=groupStage(teams);
-    let finalists=g.table.slice(0,Math.min(8,teams.length)).map(x=>x.team);
-    let ko=simulateKnockout(finalists);
-    out+=`<h3>Group / league stage</h3>${tableHTML(g.table)}<h3>Knockout</h3>`;
-    ko.rounds.forEach((r,i)=>out+=`<h4>Round ${i+1}</h4>${renderGames(r)}`);
-    out+=`<div class="notice"><b>Champion: ${ko.champion}</b></div>`;
-    ratings[ko.champion]=(ratings[ko.champion]||400)+3;
-    saveRatings();
-    saveHistory(c.name,ko.champion,teams.length);
-  }
-  document.getElementById("competitionOutput").innerHTML=out;
-  renderRankings();
-}
-function tableHTML(t){
-  return `<table><thead><tr><th>#</th><th>Nation</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>GD</th></tr></thead><tbody>`+
-  t.map((x,i)=>`<tr><td>${i+1}</td><td>${x.team}</td><td>${x.p}</td><td>${x.w}</td><td>${x.d}</td><td>${x.l}</td><td>${x.gf-x.ga}</td></tr>`).join("")+
-  `</tbody></table>`;
-}
-function quickMatch(){
-  let a=document.getElementById("quickA").value,b=document.getElementById("quickB").value;
-  if(!a||!b||a===b)return;
-  let m=match(a,b);
-  updateCompetitiveRatings(m);
-  document.getElementById("quickResult").innerHTML=`<b>${m.a} ${m.sa} - ${m.sb} ${m.b}</b><br><span class="muted">${m.winner?m.winner+" wins":"Draw"}</span><br><span class="small muted">World ranking updated and saved.</span>`;
-  renderRankings();
-}
-function updateCompetitiveRatings(m){
-  let ra=ratings[m.a]||400, rb=ratings[m.b]||400;
-  if(m.winner){
-    let winner=m.winner, loser=winner===m.a?m.b:m.a;
-    let expected=1/(1+Math.pow(10,((ratings[loser]||400)-(ratings[winner]||400))/400));
-    let change=Math.max(3,Math.round(22*(1-expected)));
-    ratings[winner]=(ratings[winner]||400)+change;
-    ratings[loser]=Math.max(1,(ratings[loser]||400)-Math.max(2,Math.round(change*.55)));
-  } else {
-    ratings[m.a]=ra+(rb>ra?3:1);
-    ratings[m.b]=rb+(ra>rb?3:1);
-  }
-  saveRatings();
+/* =====================================================
+   PAGE
+   ===================================================== */
+
+function page(x){
+
+ ["rank","cups","friendly"].forEach(
+  id=>document.getElementById(id).classList.add("hidden")
+ );
+
+ ["r","c","f"].forEach(
+  id=>document.getElementById(id).classList.remove("active")
+ );
+
+ document.getElementById(x).classList.remove("hidden");
+
+ document.getElementById(
+  x==="rank"?"r":x==="cups"?"c":"f"
+ ).classList.add("active");
 }
 
-function fillQuick(){
-  let opts=allNations.map(n=>`<option>${n.name}</option>`).join("");
-  document.getElementById("quickA").innerHTML=opts;
-  document.getElementById("quickB").innerHTML=opts;
-  if(allNations[1])document.getElementById("quickB").value=allNations[1].name;
+
+/* =====================================================
+   FRIENDLY
+   ===================================================== */
+
+function fill(){
+
+ let html=teams.map((x,i)=>
+ `<option value="${i}">
+ ${flags[x.name]||"🌍"} ${x.name}
+ </option>`
+ ).join("");
+
+ document.getElementById("a").innerHTML=html;
+ document.getElementById("b").innerHTML=html;
+
+ if(teams.length>1)
+  document.getElementById("b").selectedIndex=1;
 }
-function fillFriendly(){
-  const opts=allNations.map(n=>`<option>${n.name}</option>`).join("");
-  const a=document.getElementById("friendlyA"),b=document.getElementById("friendlyB");
-  if(a&&b){a.innerHTML=opts;b.innerHTML=opts;if(allNations[1])b.value=allNations[1].name;}
+
+
+function friendly(){
+
+ let a=teams[+document.getElementById("a").value];
+ let b=teams[+document.getElementById("b").value];
+
+ if(a===b){
+  document.getElementById("out").innerHTML=
+  '<div class="result">Choose two different nations.</div>';
+  return;
+ }
+
+ let sa=strength(a.name);
+ let sb=strength(b.name);
+
+ let pa=sa/(sa+sb);
+
+ if(Math.random()<.12){
+
+  document.getElementById("out").innerHTML=`
+  <div class="result">
+  🤝 ${a.name} and ${b.name} drew!
+  <br><span class="small">Friendly — rankings unchanged.</span>
+  </div>`;
+  return;
+ }
+
+ let winner=Math.random()<pa?a:b;
+
+ document.getElementById("out").innerHTML=`
+ <div class="result">
+ 🏆 ${flags[winner.name]||"🌍"} ${winner.name} wins!
+ <br><span class="small">Friendly — rankings unchanged.</span>
+ </div>`;
 }
-function friendlyMatch(){
-  const a=document.getElementById("friendlyA").value,b=document.getElementById("friendlyB").value;
-  if(!a||!b||a===b)return;
-  const m=match(a,b);
-  document.getElementById("friendlyResult").innerHTML=`<b>${m.a} ${m.sa} - ${m.sb} ${m.b}</b><br><span class="muted">${m.winner?m.winner+" wins":"Draw"}</span><br><span class="small muted">No ranking change.</span>`;
-}
-function renderFriendlyCups(){
-  const el=document.getElementById("friendlyCupCards"); if(!el)return;
-  const sections=["International","Europe","Africa","Asia","Americas"];
-  el.innerHTML=sections.map(sec=>`<div class="card"><h3>${sec}</h3>`+competitions.filter(c=>c.section===sec).map(c=>`<button style="width:100%;margin:4px 0;background:#1d3858;color:#fff" onclick="openFriendlyCup('${c.name.replace(/'/g,"\\'")}')">${c.name}</button>`).join("")+`</div>`).join("");
-}
-function openFriendlyCup(name){
-  window.friendlyCompetition=competitions.find(c=>c.name===name);
-  const c=window.friendlyCompetition;
-  document.getElementById("friendlyCompetitionPanel").classList.remove("hidden");
-  document.getElementById("friendlyCompetitionTitle").textContent=c.name+" — Friendly";
-  document.getElementById("friendlyCompetitionInfo").textContent=c.desc;
-  document.getElementById("friendlyCompetitionOutput").innerHTML='<div class="notice">Press PLAY FRIENDLY CUP to simulate it without changing rankings.</div>';
-  document.getElementById("friendlyCompetitionPanel").scrollIntoView({behavior:"smooth"});
-}
-function simulateFriendlyCup(){
-  const c=window.friendlyCompetition; if(!c)return;
-  let teams;
-  if(c.type==="fromqual"){ const q=competitions.find(x=>x.name===c.qual); teams=sample(byCont(q.continent),c.size); }
-  else teams=eligible(c);
-  teams=teams.map(x=>typeof x==="string"?x:x.name);
-  let out=`<div class="notice"><b>${teams.length} teams:</b> ${teams.join(", ")}</div>`;
-  if(c.type==="qual"){
-    const g=groupStage(teams); const qualified=g.table.slice(0,c.size).map(x=>x.team);
-    out+=`<h3>Friendly qualification table</h3>${tableHTML(g.table)}<h3>Qualified in this simulation</h3><p>${qualified.join(", ")}</p>`;
-  } else {
-    const g=groupStage(teams); const finalists=g.table.slice(0,Math.min(8,teams.length)).map(x=>x.team); const ko=simulateKnockout(finalists);
-    out+=`<h3>Friendly group / league stage</h3>${tableHTML(g.table)}<h3>Friendly knockout</h3>`;
-    ko.rounds.forEach((r,i)=>out+=`<h4>Round ${i+1}</h4>${renderGames(r)}`);
-    out+=`<div class="notice"><b>Friendly champion: ${ko.champion}</b><br><span class="small">No ranking change and no competition history entry.</span></div>`;
-  }
-  document.getElementById("friendlyCompetitionOutput").innerHTML=out;
-}
-function renderNations(){
-  let q=(document.getElementById("nationSearch")?.value||"").toLowerCase();
-  let html="";
-  Object.entries(groups).forEach(([cont,names])=>{
-    names.filter(n=>n.toLowerCase().includes(q)).forEach(n=>{
-      html+=`<div class="country"><div><b>${n}</b> <span class="badge">${cont}</span></div>
-      <select onchange="moveNation('${n.replace(/'/g,"\\'")}',this.value)">
-      ${Object.keys(groups).map(x=>`<option ${x===cont?"selected":""}>${x}</option>`).join("")}</select></div>`;
-    });
-  });
-  document.getElementById("nationList").innerHTML=html||'<p class="muted">No nations found.</p>';
-}
-function moveNation(name,to){
-  for(let c of Object.keys(groups)){let i=groups[c].indexOf(name);if(i>=0)groups[c].splice(i,1)}
-  groups[to].push(name);
-  rebuild(); renderCupCards();
-}
-function resetContinents(){
-  groups=structuredClone(originalGroups);rebuild();renderCupCards();
-}
-function renderRankings(){
-  let arr=allNations.map(n=>({name:n.name,continent:n.continent,r:ratings[n.name]||0})).sort((a,b)=>b.r-a.r);
-  document.getElementById("rankingBody").innerHTML=arr.map((x,i)=>`<tr><td>${i+1}</td><td>${x.name}</td><td>${x.continent}</td><td>${x.r.toFixed(1)}</td></tr>`).join("");
-}
-function saveHistory(name,champion,teams){
-  history.unshift({name,champion,teams,date:new Date().toLocaleString()});
-  document.getElementById("historyCount").textContent=history.length;
-  renderHistory();
-}
-function renderHistory(){
-  document.getElementById("historyList").innerHTML=history.length?history.map(h=>`<div class="card" style="margin:8px 0"><b>${h.name}</b><br>Champion/result: ${h.champion}<br><span class="muted">${h.teams} teams · ${h.date}</span></div>`).join(""):'<p class="muted">No competitions simulated yet.</p>';
-}
-document.querySelectorAll(".tabs button").forEach(btn=>btn.onclick=()=>{
-  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
-  btn.classList.add("active");document.getElementById(btn.dataset.tab).classList.remove("hidden");
-});
-rebuild();renderCupCards();renderHistory();
+
+
+/* START */
+draw();
+
 </script>
 </body>
 </html>
