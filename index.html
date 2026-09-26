@@ -160,13 +160,33 @@ let ratings = {};
 let history = [];
 let currentCompetition = null;
 
+// Official starting Doll Ball World Ranking.
+// The original list had two #36 entries; this keeps the supplied order and
+// treats them as consecutive ranks: Russia #36, South Africa #37, Spain #38.
+const officialRanking = [
+  "Canada","Iceland","Japan","Panama","Finland","Australia","USA","Mexico","France","England",
+  "Poland","Ireland","Colombia","Ecuador","Germany","Latvia","Sierra Leone","Netherlands","Sweden","Scotland",
+  "Kenya","New Zealand","St Lucia","Chile","Jamaica","Switzerland","Belgium","Denmark","Estonia","Kazakhstan",
+  "Türkiye","DR Congo","Togo","China","India","Russia","South Africa","Spain","Venezuela","Bulgaria",
+  "Ukraine","Portugal","Romania","Philippines","Norway","Italy","Rwanda","Argentina","Croatia","Kosovo",
+  "Israel","Morocco","Brazil","Costa Rica","Fiji","North Korea","Moldova","Austria","Czechia","Greece",
+  "Nigeria","Tanzania","Haiti","Nicaragua","South Korea","Tuvalu","Peru","Barbados","Senegal","Serbia",
+  "Guam","Hong Kong","Curaçao","Uruguay","Liberia","Hungary","Bosnia and Herzegovina","Ivory Coast (Côte d'Ivoire)",
+  "Albania","Ghana","San Marino","Nepal","Vatican City","Malta","Laos","Thailand","Vietnam","Saudi Arabia",
+  "The Bahamas","Andorra","Wales"
+];
+
 function rebuild(){
   allNations = Object.entries(groups).flatMap(([continent, arr])=>arr.map(name=>({name,continent})));
   document.getElementById("nationCount").textContent = allNations.length;
   if(!Object.keys(ratings).length){
-    allNations.forEach((n,i)=>ratings[n.name]=Math.max(45,99-(i%30)*1.35+Math.random()*8));
+    const ranked = officialRanking.filter(n=>allNations.some(x=>x.name===n));
+    ranked.forEach((n,i)=>ratings[n]=10000-i*80);
+    // From #92 onward, remaining nations are placed in a stable order.
+    const remaining = allNations.map(n=>n.name).filter(n=>!officialRanking.includes(n));
+    remaining.forEach((n,i)=>ratings[n]=10000-(ranked.length+i)*80);
   } else {
-    allNations.forEach(n=>{if(!(n.name in ratings)) ratings[n.name]=65+Math.random()*20});
+    allNations.forEach(n=>{if(!(n.name in ratings)) ratings[n.name]=10000-(Object.keys(ratings).length)*80});
   }
   fillQuick();
   renderNations();
